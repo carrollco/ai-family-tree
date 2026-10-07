@@ -200,8 +200,11 @@ footer p{margin:0 0 8px}
   .layout{display:block}
   .panel{position:static;max-height:none;box-shadow:none}
 }
-.bannerwrap{margin:14px 0 4px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
-.banner{display:block;width:100%;height:clamp(96px,20vw,250px)}
+header{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,400px);column-gap:28px;align-items:center}
+header>*:not(.bannerwrap){grid-column:1}
+.bannerwrap{grid-column:2;grid-row:1 / span 3;align-self:center}
+.banner{display:block;width:100%;height:auto}
+@media (max-width:900px){header{display:block}.bannerwrap{display:none}}
 </style>
 </head>
 <body>
@@ -211,7 +214,7 @@ footer p{margin:0 0 8px}
     <div class="eyebrow">People · Papers · Ideas</div>
     <h1>Family Tree of AI</h1>
     <p>From Turing's computing machines to models that act: who taught whom, and whose ideas built on whose. Click a name to trace its lineage, hover or focus a line to read the connection, or take the guided tour.</p>
-    <div class="bannerwrap"><svg class="banner" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 600" role="img" aria-labelledby="ftb-title">
+    <div class="bannerwrap"><svg class="banner" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" viewBox="90 130 1640 360" role="img" aria-labelledby="ftb-title">
 <title id="ftb-title">A circuit-trace tree carrying symbols from early logic through conversational artificial intelligence</title>
 <defs><filter id="ftb-paper"><feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="3" stitchTiles="stitch"/>
 <feColorMatrix type="matrix" values="0 0 0 0 .356863 0 0 0 0 .247059 0 0 0 0 .658824 0 0 0 .07 0"/></filter>
