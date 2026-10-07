@@ -250,6 +250,55 @@ for (const [w, hgt] of [[1280, 900], [390, 844]]){
   check(`images/faces/ is under 600 KB (${(total / 1024).toFixed(1)} KB in ${files.length} files, each under 20 KB) and holds exactly the photos the page uses`,
     total < 600 * 1024 && big.length === 0 && unused.length === 0 && missing.length === 0, JSON.stringify({big, unused, missing}));
 }
+/* One scroll (2026-10-07): the page is the only vertical scroll. The wheel over the map moves the page,
+   the map never scrolls up and down inside itself, the details panel stays in view on a wide screen,
+   every tour stop lands in view above the tour card, and the phone hint shows only on narrow screens. */
+for (const [w, hgt] of [[1366, 700], [390, 844]]){
+  const tag = `${w}px`;
+  const p = await page(w, hgt);
+  const inner = await p.evaluate(() => { const c = document.getElementById("canvas"); return c.scrollHeight - c.clientHeight; });
+  check(`${tag} the map has no scroll of its own up and down`, inner <= 1, String(inner));
+  if (w > 500){
+    const box = await (await p.$("#canvas")).boundingBox();
+    await p.mouse.move(box.x + box.width / 2, box.y + 200);
+    const y0 = await p.evaluate(() => scrollY);
+    await p.mouse.wheel(0, 600); await p.waitForTimeout(500);
+    const y1 = await p.evaluate(() => scrollY);
+    check(`${tag} the wheel over the map scrolls the page`, y1 > y0 + 300, `${y0} -> ${y1}`);
+    await p.evaluate(() => { const l = document.querySelector('.layout'); window.scrollTo(0, l.getBoundingClientRect().top + scrollY + 400); }); await p.waitForTimeout(300);
+    const pr = await p.evaluate(() => { const r = document.getElementById("panel").getBoundingClientRect(); return [Math.round(r.top), Math.round(r.bottom)]; });
+    check(`${tag} the details panel stays in view after scrolling`, pr[0] >= 0 && pr[0] < 40, JSON.stringify(pr));
+  }
+  const hint = await p.evaluate(() => getComputedStyle(document.querySelector(".phonehint")).display !== "none");
+  check(`${tag} the phone hint shows only on a narrow screen`, hint === (w < 760), String(hint));
+  await p.click("#tourBtn"); await p.waitForTimeout(1300);
+  const bad = [];
+  for (let i = 0; i < 14; i++){
+    const r = await p.evaluate(() => {
+      const c = document.getElementById("tourcard").getBoundingClientRect(), n = document.querySelector("#tree .node.sel");
+      if (!n) return "no selection";
+      const b = n.getBoundingClientRect();
+      if (b.top < 0 || b.bottom > innerHeight) return `${n.dataset.id} off screen ${Math.round(b.top)}..${Math.round(b.bottom)}`;
+      if (!(b.right < c.left || b.left > c.right || b.bottom < c.top || b.top > c.bottom)) return `${n.dataset.id} under the card`;
+      return "";
+    });
+    if (r) bad.push(`stop ${i + 1}: ${r}`);
+    if (i < 13){ await p.click("#tNext"); await p.waitForTimeout(1100); }
+  }
+  check(`${tag} every tour stop lands on screen and clear of the tour card`, bad.length === 0, bad.join("; "));
+  check(`${tag} one-scroll checks raised no page errors`, p.errs.length === 0, p.errs.join(" | "));
+  await p.close();
+}
+{
+  const p = await page(390, 844);
+  await p.click("#phoneList"); await p.waitForTimeout(700);
+  const open = await p.evaluate(() => document.querySelector(".listview").open);
+  await p.click("#phoneTour"); await p.waitForTimeout(1000);
+  const tour = await p.evaluate(() => !document.getElementById("tourcard").hidden);
+  check("390px the phone hint's buttons open the list and start the tour", open && tour, JSON.stringify({open, tour}));
+  await p.close();
+}
+
 await b.close();
 fs.writeFileSync(new URL("../tmp/verify-results.json", import.meta.url), JSON.stringify(results, null, 1));
 console.log(`\n${results.filter(r => r.ok).length}/${results.length} checks passed`);
