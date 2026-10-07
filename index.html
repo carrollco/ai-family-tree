@@ -147,7 +147,23 @@ header p{margin:0;color:var(--muted);max-width:760px}
 footer{color:var(--muted);font-size:13px;margin-top:22px;border-top:1px solid var(--line);padding-top:12px;max-width:980px}
 footer p{margin:0 0 8px}
 @media (max-width:1100px){.layout{grid-template-columns:minmax(0,1fr) 320px}}
+.mapframe{position:relative}
+.tourcard{position:absolute;left:14px;bottom:14px;z-index:6;width:min(440px,calc(100% - 28px));background:#fff;border:2px solid #28508f;border-radius:14px;box-shadow:0 10px 30px rgba(20,30,60,.18);padding:14px 16px}
+.tourcard .tk{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#28508f;font-weight:650}
+.tourcard h3{margin:4px 0 2px;font-size:20px}
+.tourcard p{margin:6px 0 10px;font-size:15px}
+.tourcard .dots{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0 2px}
+.tourcard .dot{width:12px;height:12px;border-radius:50%;border:1.5px solid #28508f;background:#fff;padding:0;cursor:pointer}
+.tourcard .dot.on{background:#28508f}
+.tourcard .tournav{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tourcard .hint{font-size:12px;color:var(--muted, #6b6b6b);margin:8px 0 0}
+#tree.touring .node.sel .box{animation:tourpulse 1.3s ease-in-out infinite}
+@keyframes tourpulse{50%{stroke-width:7}}
+.copylink{font-size:13px;margin:2px 0 10px}
+.copylink .hint{display:block;font-size:12px;color:#6b6b6b;margin-top:4px}
 @media (max-width:760px){
+  .tourcard{position:fixed;left:8px;right:8px;bottom:8px;width:auto}
+  body.touring footer{padding-bottom:300px}
   body{padding:14px 12px 28px}
   .layout{display:block}
   .year{flex:1 1 100%}
@@ -225,8 +241,11 @@ footer p{margin:0 0 8px}
           <button type="button" id="zIn" aria-label="Zoom in">+</button>
         </div>
       </div>
+      <div class="mapframe">
       <div class="canvas" id="canvas">
         <svg id="tree" role="group" aria-label="Influence graph of AI people, works and ideas. Each name is a button; each connection is a button that describes the link."></svg>
+      </div>
+      <div id="tourcard" class="tourcard" role="group" aria-label="Guided tour" aria-live="polite" hidden></div>
       </div>
       <div class="kinds" id="kinds" aria-label="How to read the boxes"></div>
       <details class="listview">
@@ -494,7 +513,7 @@ function resetFilters(){
   typesEl.querySelectorAll("input").forEach(i => i.checked = true);
   syncChips(); syncSeg();
 }
-$("tourBtn").addEventListener("click", () => startTour());
+$("tourBtn").addEventListener("click", () => state.tour >= 0 ? endTour() : startTour());
 
 /* kinds legend */
 const kinds = $("kinds");
@@ -631,6 +650,7 @@ function render(){
   bits.push(`${edgesShown} connections lit`);
   $("status").textContent = bits.join(" · ") + ". Dimmed names stay clickable for context.";
   renderPanel(lin);
+  renderTourCard();
 }
 function modeLabel(){ return state.mode === "up" ? "ancestors" : state.mode === "down" ? "descendants" : "full lineage"; }
 
@@ -646,18 +666,6 @@ function linkList(items){
       h("span", {class: "note", text: `${t.label}: ${e.note}`}))));
   });
   return ul;
-}
-function tourBox(){
-  const i = state.tour, stop = TOUR[i];
-  const last = i === TOUR.length - 1;
-  return h("div", {class: "tourbox", role: "group", "aria-label": "Guided tour"},
-    h("div", {class: "tk", text: `Guided tour · stop ${i + 1} of ${TOUR.length}`}),
-    h("p", {text: stop.text}),
-    h("div", {class: "tournav"},
-      h("button", {type: "button", class: "btn", id: "tBack", disabled: i === 0 ? "" : false, onclick: () => tourStep(-1)}, "← Back"),
-      h("button", {type: "button", class: "btn primary", id: "tNext", onclick: () => last ? endTour() : tourStep(1)}, last ? "Finish ✓" : "Next →"),
-      h("button", {type: "button", class: "btn", id: "tExit", onclick: () => endTour()}, "Exit tour"),
-      h("span", {class: "hint", text: "Arrow keys work too."})));
 }
 function renderPanel(lin){
   const keepFocus = document.activeElement && panel.contains(document.activeElement) ? document.activeElement.id : null;
@@ -680,9 +688,17 @@ function renderPanel(lin){
   const n = byId.get(state.selected), era = eraById.get(n.era);
   panel.setAttribute("aria-label", `Details: ${n.name}`);
   panel.append(h("button", {type: "button", class: "close", id: "pClose", "aria-label": "Close details and clear the selection", onclick: () => { state.tour = -1; select(null); }}, "×"));
-  if (state.tour >= 0) panel.append(tourBox());
   const kick = h("div", {class: "kicker", text: `${era.name} · ${n.year}`});
   panel.append(kick, h("h2", {text: n.name, id: "pTitle"}));
+  const link = location.href.split("#")[0] + "#" + n.id;
+  panel.append(h("p", {class: "copylink"},
+    h("button", {type: "button", class: "btn", onclick: ev => {
+      const b = ev.currentTarget;
+      const done = () => { b.textContent = "Link copied ✓"; setTimeout(() => { b.textContent = "Copy link to this name"; }, 1800); };
+      if (navigator.clipboard) navigator.clipboard.writeText(link).then(done, () => prompt("Copy this link:", link));
+      else prompt("Copy this link:", link);
+    }}, "Copy link to this name"),
+    h("span", {class: "hint", text: " Anyone opening it lands on " + n.name + "."})));
   panel.append(h("div", {class: "meta"},
     h("span", {class: "tag"}, dot(topicColor.get(n.topic)), n.topic),
     h("span", {class: "tag", text: KIND[n.kind]}),
@@ -712,7 +728,8 @@ function renderPanel(lin){
   const ins = EDGES.filter(e => e.to === n.id && state.types.has(e.type)).map(e => ({other: byId.get(e.from), e}));
   const outs = EDGES.filter(e => e.from === n.id && state.types.has(e.type)).map(e => ({other: byId.get(e.to), e}));
   panel.append(h("h3", {text: "Influenced by"}), linkList(ins), h("h3", {text: "Influenced"}), linkList(outs));
-  panel.classList.add("open"); document.body.classList.toggle("sheet-open", narrow.matches);
+  const sheetUp = !(narrow.matches && state.tour >= 0);
+  panel.classList.toggle("open", sheetUp); document.body.classList.toggle("sheet-open", narrow.matches && sheetUp);
   if (keepFocus && $(keepFocus)) $(keepFocus).focus({preventScroll: true});
 }
 
@@ -760,7 +777,8 @@ function scrollToNode(n, ifNeeded){
     window.scrollTo({top: Math.max(0, window.scrollY + shift), behavior});
   }
   const top2 = cr.top - shift, vt = Math.max(top2, 0), vb = Math.min(cr.bottom - shift, viewBottom);
-  const centerY = Math.max(40, (vt + vb) / 2 - top2);
+  /* During the tour the card covers the map's lower part, so a stop sits in the upper third. */
+  const centerY = Math.max(40, (state.tour >= 0 ? vt + (vb - vt) * 0.33 : (vt + vb) / 2) - top2);
   canvas.scrollTo({left: n.x * zoom - canvas.clientWidth / 2, top: n.y * zoom - centerY, behavior});
 }
 window.addEventListener("hashchange", () => { const id = resolve(location.hash.slice(1)); if (id && id !== state.selected){ state.tour = -1; select(id, {scroll: true}); } });
@@ -805,20 +823,59 @@ function hideTip(){ tip.hidden = true; }
 canvas.addEventListener("scroll", () => { if (!document.activeElement || !document.activeElement.classList || !document.activeElement.classList.contains("efocus")) hideTip(); }, {passive: true});
 
 /* ---------- tour ---------- */
+/* A floating card over the map, not a box inside the details panel: the first stop is already on
+   screen, so a tour that only changed the panel looked like a dead button. */
+const tourcard = $("tourcard");
+let tourTimer = null;
+const TOUR_MS = 7000;
+function stopPlay(){ if (tourTimer){ clearInterval(tourTimer); tourTimer = null; } }
+function togglePlay(){
+  if (tourTimer) stopPlay();
+  else tourTimer = setInterval(() => { if (state.tour < 0 || state.tour >= TOUR.length - 1){ stopPlay(); renderTourCard(); } else tourStep(1); }, TOUR_MS);
+  renderTourCard();
+}
+function renderTourCard(){
+  const on = state.tour >= 0;
+  const btn = $("tourBtn");
+  btn.textContent = on ? "■ Exit tour" : "▶ Guided tour";
+  btn.setAttribute("aria-pressed", on ? "true" : "false");
+  tree.classList.toggle("touring", on);
+  document.body.classList.toggle("touring", on);
+  if (!on){ stopPlay(); tourcard.hidden = true; tourcard.replaceChildren(); return; }
+  const i = state.tour, stop = TOUR[i], n = byId.get(stop.id), last = i === TOUR.length - 1;
+  const keep = document.activeElement && tourcard.contains(document.activeElement) ? document.activeElement.id : null;
+  tourcard.replaceChildren(
+    h("div", {class: "tk", text: `Guided tour · stop ${i + 1} of ${TOUR.length}`}),
+    h("div", {class: "dots", role: "group", "aria-label": "Jump to a stop"}, ...TOUR.map((t, j) =>
+      h("button", {type: "button", class: j === i ? "dot on" : "dot", "aria-label": `Stop ${j + 1}: ${byId.get(t.id).name}`, "aria-current": j === i ? "step" : false, onclick: () => tourGo(j)}))),
+    h("h3", {text: n.name}),
+    h("p", {text: stop.text}),
+    h("div", {class: "tournav"},
+      h("button", {type: "button", class: "btn", id: "tBack", disabled: i === 0 ? "" : false, onclick: () => tourStep(-1)}, "← Back"),
+      h("button", {type: "button", class: "btn primary", id: "tNext", onclick: () => last ? endTour() : tourStep(1)}, last ? "Finish ✓" : "Next →"),
+      h("button", {type: "button", class: "btn", id: "tPlay", "aria-pressed": tourTimer ? "true" : "false", onclick: togglePlay}, tourTimer ? "❚❚ Pause" : "▶ Play"),
+      h("button", {type: "button", class: "btn", id: "tExit", onclick: () => endTour()}, "Exit")),
+    h("p", {class: "hint", text: "Arrow keys step through, Escape exits. Play moves on every 7 seconds."}));
+  tourcard.hidden = false;
+  if (keep && $(keep)) $(keep).focus({preventScroll: true});
+}
+function tourGo(j){
+  if (j < 0 || j >= TOUR.length) return;
+  state.tour = j;
+  select(TOUR[j].id, {scroll: true});
+}
 function startTour(){
   resetFilters();
-  state.tour = 0;
-  select(TOUR[0].id, {scroll: true});
+  const top = document.querySelector(".layout").getBoundingClientRect().top + window.scrollY - 8;
+  window.scrollTo({top: Math.max(0, top), behavior: reduced.matches ? "auto" : "smooth"});
+  tourGo(0);
   focusTour();
 }
 function tourStep(d){
   if (state.tour < 0) return;
-  const next = state.tour + d;
-  if (next < 0 || next >= TOUR.length) return;
-  state.tour = next;
-  select(TOUR[next].id, {scroll: true});
+  tourGo(state.tour + d);
 }
-function endTour(){ state.tour = -1; render(); }
+function endTour(){ stopPlay(); state.tour = -1; render(); }
 function focusTour(){ const b = $("tNext"); if (b) b.focus({preventScroll: true}); }
 
 /* ---------- keyboard ---------- */

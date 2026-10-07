@@ -122,3 +122,11 @@ A second real quote sits on Backpropagation: Hinton on StarTalk at 1:16:32, corr
 [originals/](originals/) holds the two source pages unchanged.
 
 Made by Carroll Guertin.
+
+## Checks
+
+`checks/verify.mjs` drives the page in headless Chromium at 390 and 1280 px wide (42 checks: no
+errors, no sideways scrolling, search, lineage modes, link toggles, the year slider, the guided tour,
+deep links, the quote cards, and that every link is one of `checks/verified-urls.txt`). Serve the
+folder on port 8793 (`python3 -m http.server 8793 --bind 127.0.0.1`), then `cd checks && node
+verify.mjs`; it needs Playwright, and screenshots go to `tmp/`.
