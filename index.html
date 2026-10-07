@@ -1,0 +1,851 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Family Tree of AI · people, papers and ideas</title>
+<meta name="description" content="An interactive family tree of AI: who taught whom and whose ideas built on whose, from Turing to models that act, with primary sources for each name.">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#f7f5f0; --panel:#ffffff; --ink:#1c1a17; --muted:#5d584f; --line:#dcd6ca;
+  --node:#ffffff; --node-stroke:#b3ab9c; --band:#efebe2; --band-alt:#f8f6f1;
+  --sel:#d49a00; --focus:#1a5fd0; --match:#fff3c4;
+  --shadow:0 1px 2px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.06);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:20px 16px 40px;overflow-x:hidden}
+.page{max-width:1480px;margin:0 auto}
+a{color:#1b5fb4}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:where(button,a,input,summary,[tabindex]):focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip{position:absolute;left:12px;top:-60px;background:var(--panel);border:2px solid var(--focus);padding:8px 12px;border-radius:8px;z-index:50}
+.skip:focus{top:10px}
+header .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:650}
+header h1{margin:4px 0 6px;font-size:clamp(26px,4.2vw,40px);line-height:1.1;letter-spacing:-.015em}
+header p{margin:0;color:var(--muted);max-width:760px}
+.controls{margin:16px 0 6px;display:grid;gap:10px}
+.row{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;min-width:0}
+.search{position:relative;flex:1 1 260px;min-width:0;max-width:520px}
+.search input{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+#results{position:absolute;z-index:30;left:0;right:0;top:calc(100% + 4px);margin:0;padding:4px;list-style:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);max-height:320px;overflow:auto}
+#results li{padding:7px 10px;border-radius:7px;cursor:pointer;display:flex;gap:8px;align-items:baseline;justify-content:space-between}
+#results li .rn{font-weight:650}
+#results li .rs{color:var(--muted);font-size:12.5px;text-align:right}
+#results li[aria-selected="true"],#results li:hover{background:var(--band)}
+#results .none{color:var(--muted);cursor:default}
+.year{display:flex;align-items:center;gap:10px;flex:0 1 330px;min-width:0}
+.year label{white-space:nowrap;font-size:14px}
+.year output{font-weight:650;display:inline-block;min-width:5.6em}
+.year input{flex:1;min-width:90px;accent-color:#7a5c00}
+.btn{border:1px solid var(--line);background:var(--panel);font-size:14px;padding:8px 14px;border-radius:999px}
+.btn:hover{background:var(--band)}
+.btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.primary:hover{background:#3a3631}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:999px;font-size:13px;padding:5px 12px;display:inline-flex;align-items:center;gap:7px}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--c);display:inline-block;flex:none}
+.chip[aria-pressed="true"] .dot{box-shadow:0 0 0 2px #fff}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--panel)}
+.seg button{border:0;background:none;font-size:13px;padding:6px 13px}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.types{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;min-width:0}
+.types label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+.types input{margin:0;accent-color:var(--ink)}
+.swatch{display:inline-block;vertical-align:middle;flex:none}
+.filter-rows{display:grid;gap:10px}
+.filters>summary{display:none}
+.status{color:var(--muted);font-size:13px;margin:6px 0 10px;min-height:1.5em}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start}
+.graph{min-width:0}
+.tools{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px;font-size:12.5px;color:var(--muted)}
+.zoom{display:inline-flex;gap:4px}
+.zoom button{border:1px solid var(--line);background:var(--panel);border-radius:8px;min-width:34px;height:32px;padding:0 9px;font-size:14px}
+.zoom button:hover{background:var(--band)}
+.canvas{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:auto;max-height:min(80vh,920px);overscroll-behavior:contain;cursor:grab;position:relative}
+.canvas.dragging{cursor:grabbing;user-select:none}
+.canvas svg{display:block}
+.kinds{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted);margin-top:8px;align-items:center}
+.kinds span{display:inline-flex;align-items:center;gap:6px}
+.listview{margin-top:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 14px}
+.listview summary{cursor:pointer;font-weight:600;font-size:14px;padding:4px 0}
+.listview h3{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:12px 0 4px}
+.listview ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.listview li button{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:4px 9px;font-size:13px}
+.listview li button:hover{background:var(--band)}
+/* svg */
+.band{fill:var(--band)}.band.alt{fill:var(--band-alt)}
+.era-label{font-size:11px;letter-spacing:.08em;fill:var(--muted);font-weight:650;pointer-events:none;text-transform:uppercase;stroke-width:6px;stroke-linejoin:round;paint-order:stroke}
+.edge{transition:opacity .2s}
+.edge .line{fill:none;opacity:.6}
+.edge .hit{fill:none;stroke:transparent;stroke-width:13;cursor:help;pointer-events:stroke}
+.edge.hl .line{opacity:1}
+.edge.hot .line{opacity:1;filter:drop-shadow(0 0 2px rgba(0,0,0,.25))}
+.edge.dim{opacity:.07}
+.edge.off{display:none}
+.efocus{fill:none;stroke:transparent;stroke-width:9;pointer-events:none}
+.efocus:focus{outline:none}
+.efocus:focus-visible{stroke:rgba(26,95,208,.35)}
+.efocus.off{display:none}
+.node{cursor:pointer;transition:opacity .2s}
+.node .box{fill:var(--node);stroke:var(--node-stroke);stroke-width:1.2}
+.node.idea .box{stroke-dasharray:5 3}
+.node .t{font-size:13px;font-weight:650;fill:var(--ink)}
+.node .s{font-size:11px;fill:var(--muted)}
+.node:hover .box{stroke:var(--ink)}
+.node:focus{outline:none}
+.node .ring{fill:none;stroke:transparent;stroke-width:3}
+.node:focus-visible .ring{stroke:var(--focus)}
+.node.dim{opacity:.2}
+.node.hl .box{stroke:var(--ink);stroke-width:1.7}
+.node.match .box{fill:var(--match);stroke:#8a6d00;stroke-width:2}
+.node.sel .box{stroke:var(--sel);stroke-width:3.2}
+/* panel */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:18px 18px 20px;position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
+.panel:focus{outline:none}
+.panel .close{float:right;border:1px solid var(--line);background:var(--panel);border-radius:999px;width:34px;height:34px;font-size:18px;line-height:1;margin:-4px -4px 6px 8px}
+.panel .close:hover{background:var(--band)}
+.grab{display:none}
+.kicker{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.panel h2{margin:4px 0 2px;font-size:22px;line-height:1.2}
+.meta{color:var(--muted);font-size:13px;margin-bottom:10px}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:1px 9px;margin-right:6px;color:var(--ink);background:var(--band-alt)}
+.lead{font-weight:600;margin:8px 0}
+.panel p{margin:0 0 12px}
+.panel h3{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:16px 0 6px}
+.sources{margin:0;padding-left:18px}
+.sources li{margin:3px 0}
+.links{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.links button{display:block;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 10px;font-size:13px}
+.links button:hover{background:var(--band)}
+.links strong{display:flex;align-items:center;gap:8px;font-size:14px}
+.links .note{color:var(--muted);display:block;margin-top:2px}
+.empty{color:var(--muted);font-size:13px}
+.quote{margin:14px 0;padding:14px 16px;border:1px solid #e3c87a;border-left:5px solid var(--sel);border-radius:10px;background:#fffbef}
+.quote .qk{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#7a5c00;font-weight:650;margin-bottom:4px}
+.quote blockquote{margin:0;font-size:17px;line-height:1.4;font-weight:600}
+.quote figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+.quote small{display:block;margin-top:6px;font-size:12px}
+.loop{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px;padding:0;list-style:none}
+.loop li{background:var(--band);border-radius:6px;padding:3px 9px;font-size:12.5px}
+.tourbox{clear:both;border:1px solid var(--line);background:#f4f8ff;border-radius:12px;padding:12px 14px;margin-bottom:14px}
+.tourbox .tk{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#28508f;font-weight:650}
+.tourbox p{margin:6px 0 10px;font-size:15px}
+.tournav{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tournav .hint{font-size:12px;color:var(--muted)}
+.intro-cta{margin:4px 0 14px}
+#tip{position:fixed;z-index:40;pointer-events:none;background:var(--panel);color:var(--ink);border:1px solid var(--line);box-shadow:var(--shadow);font-size:13px;line-height:1.4;padding:8px 10px;border-radius:9px;max-width:300px}
+#tip strong{display:block}
+#tip .tt{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px;margin:2px 0}
+#tip .th{color:var(--muted);font-size:12px;margin-top:4px}
+footer{color:var(--muted);font-size:13px;margin-top:22px;border-top:1px solid var(--line);padding-top:12px;max-width:980px}
+footer p{margin:0 0 8px}
+@media (max-width:1100px){.layout{grid-template-columns:minmax(0,1fr) 320px}}
+@media (max-width:760px){
+  body{padding:14px 12px 28px}
+  .layout{display:block}
+  .year{flex:1 1 100%}
+  .canvas{max-height:64vh}
+  .filters>summary{display:list-item;cursor:pointer;font-size:14px;font-weight:600;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+  .filters[open]>summary{margin-bottom:10px}
+  .tools .hint{display:none}
+  .panel{position:fixed;left:0;right:0;bottom:0;top:auto;max-height:52vh;border-radius:16px 16px 0 0;border-bottom:0;z-index:20;transform:translateY(105%);transition:transform .25s ease;visibility:hidden;padding-top:10px;box-shadow:0 -6px 24px rgba(0,0,0,.16)}
+  .panel.open{transform:none;visibility:visible}
+  .grab{display:block;width:44px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 8px}
+  body.sheet-open footer{padding-bottom:54vh}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+}
+@media print{
+  .controls,.tools,.listview,#tip,.skip{display:none}
+  .canvas{max-height:none;overflow:visible;box-shadow:none}
+  .layout{display:block}
+  .panel{position:static;max-height:none;box-shadow:none}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#panel">Skip to the details panel</a>
+<div class="page">
+  <header>
+    <div class="eyebrow">People · Papers · Ideas</div>
+    <h1>Family Tree of AI</h1>
+    <p>From Turing's computing machines to models that act: who taught whom, and whose ideas built on whose. Click a name to trace its lineage, hover or focus a line to read the connection, or take the guided tour.</p>
+  </header>
+
+  <section class="controls" aria-label="Search and filters">
+    <div class="row">
+      <div class="search">
+        <label for="q" class="sr">Search people, works and ideas</label>
+        <input id="q" type="search" placeholder="Search Hinton, self-play, Transformer…" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="results" autocomplete="off" spellcheck="false">
+        <ul id="results" role="listbox" aria-label="Search results" hidden></ul>
+      </div>
+      <div class="year">
+        <label for="year">Through <output id="yearOut" for="year"></output></label>
+        <input id="year" type="range" step="1" aria-describedby="yearHelp">
+        <span id="yearHelp" class="sr">Names and connections after the chosen year are dimmed.</span>
+      </div>
+      <button id="tourBtn" class="btn primary" type="button">▶ Guided tour</button>
+      <button id="resetBtn" class="btn" type="button">Reset</button>
+    </div>
+    <details class="filters" id="filters" open>
+    <summary id="filtersSum">Topics, lineage and connection types</summary>
+    <div class="filter-rows">
+    <div class="row">
+      <div class="chips" id="chips" role="group" aria-label="Filter by topic"></div>
+    </div>
+    <div class="row">
+      <div class="seg" id="seg" role="group" aria-label="Lineage mode for the selected name">
+        <button type="button" data-mode="both" aria-pressed="true">Full lineage</button>
+        <button type="button" data-mode="up" aria-pressed="false">Ancestors</button>
+        <button type="button" data-mode="down" aria-pressed="false">Descendants</button>
+      </div>
+      <fieldset class="types" id="types"><legend class="sr">Show connection types</legend></fieldset>
+    </div>
+    </div>
+    </details>
+  </section>
+
+  <p id="status" class="status" aria-live="polite"></p>
+
+  <div class="layout">
+    <div class="graph">
+      <div class="tools">
+        <span class="hint">Drag or scroll inside the map to pan. Tab moves through names in date order, then through connections.</span>
+        <div class="zoom" role="group" aria-label="Zoom the map">
+          <button type="button" id="zOut" aria-label="Zoom out">−</button>
+          <button type="button" id="zFit" aria-label="Fit the map to the width">Fit</button>
+          <button type="button" id="zIn" aria-label="Zoom in">+</button>
+        </div>
+      </div>
+      <div class="canvas" id="canvas">
+        <svg id="tree" role="group" aria-label="Influence graph of AI people, works and ideas. Each name is a button; each connection is a button that describes the link."></svg>
+      </div>
+      <div class="kinds" id="kinds" aria-label="How to read the boxes"></div>
+      <details class="listview">
+        <summary>Browse every name as a list</summary>
+        <div id="list"></div>
+      </details>
+    </div>
+    <aside id="panel" class="panel" aria-label="Details" tabindex="-1"></aside>
+  </div>
+
+  <footer>
+    <p><strong>About this page.</strong> An interactive map of selected people, papers and ideas behind modern AI, from Turing's computing machines to language models that act. It is a selected history, not a complete one: many important researchers and lines of work are missing, and a line marks one documented influence, not full credit or a ranking. Years mark the milestone shown, not birth dates.</p>
+    <p><strong>Sources.</strong> Each name's panel links its primary sources (the papers themselves, award announcements, the authors' and institutions' own pages). The accompanying README lists every fact-check correction made against the two pages this one was merged from, with sources. Naming a person or organization here implies no endorsement by them.</p>
+    <p id="stats"></p>
+    <p>Made by Carroll Guertin.</p>
+  </footer>
+</div>
+<div id="tip" role="tooltip" hidden></div>
+
+<script type="application/json" id="data">{"eras":[{"id":"foundations","name":"Foundations","span":"1936 to 1956","from":1900,"to":1956},{"id":"winter","name":"Perceptrons and the first winter","span":"1957 to 1979","from":1957,"to":1979},{"id":"connectionism","name":"Backprop and connectionism","span":"1980 to 1999","from":1980,"to":1999},{"id":"scale","name":"Scale and data","span":"2000 to 2012","from":2000,"to":2012},{"id":"sequences","name":"Sequences and play","span":"2013 to 2016","from":2013,"to":2016},{"id":"attention","name":"Attention, then action","span":"2017 onward","from":2017,"to":2100}],"topics":[{"id":"Foundations","color":"#4a3aa7"},{"id":"Neural networks","color":"#eb6834"},{"id":"Vision","color":"#c2185b"},{"id":"Language","color":"#2a78d6"},{"id":"Reinforcement learning","color":"#159a6c"}],"types":[{"id":"mentor","label":"Teacher to student","color":"#c56a00","dash":"","width":2.6},{"id":"collab","label":"Worked together","color":"#5f3dc4","dash":"9 3 2 3","width":1.9},{"id":"idea","label":"Built on the idea","color":"#0b8ad8","dash":"","width":1.6},{"id":"precursor","label":"Earlier discovery","color":"#7d8590","dash":"6 4","width":1.8},{"id":"critique","label":"Critique and answer","color":"#c2255c","dash":"1.5 4","width":2.2}],"nodes":[{"id":"turing","name":"Alan Turing","kind":"person","year":1936,"era":"foundations","topic":"Foundations","sub":"1936 · Computability","who":"Alan Turing","summary":"Defined what a machine can compute, then asked whether machines can think.","description":"In 1936 Turing described the Turing machine, a precise model of what any mechanical procedure can compute, including a universal machine that can run any other. His 1950 paper in Mind replaced the vague question \"Can machines think?\" with an operational test of conversation, the imitation game. It was a conceptual foundation, not a neural-network design.","sources":[{"label":"Mind paper, 1950 (Oxford Academic, via DOI)","url":"https://doi.org/10.1093/mind/LIX.236.433"}],"pos":{"row":0,"x":326}},{"id":"mcp","name":"McCulloch & Pitts","kind":"person","year":1943,"era":"foundations","topic":"Neural networks","sub":"1943 · Formal neuron","who":"Warren McCulloch and Walter Pitts","summary":"Modeled the neuron as an all-or-none threshold logic unit.","description":"Their 1943 paper modeled a neuron as an all-or-none threshold unit and showed that networks of such units can compute logical functions. They argued that a net given a tape could compute the same numbers as a Turing machine. Neural-network history starts here, before Rosenblatt.","sources":[{"label":"Bulletin of Mathematical Biophysics paper, 1943 (Springer)","url":"https://doi.org/10.1007/BF02478259"}],"pos":{"row":0,"x":522}},{"id":"shannon","name":"Claude Shannon","kind":"person","year":1948,"era":"foundations","topic":"Foundations","sub":"1948 · Information theory","who":"Claude Shannon","summary":"Founded information theory; co-signed the Dartmouth proposal.","description":"His 1948 paper \"A Mathematical Theory of Communication\" founded information theory, and his 1937 master's thesis showed that relay circuits can carry out Boolean logic. He co-signed the 1955 proposal for the Dartmouth workshop, and in 1952 he demonstrated Theseus, a mechanical mouse that learned a maze by trial and error. Neighboring foundations from the same years include Norbert Wiener's cybernetics (feedback and control, 1948) and John von Neumann's computer architecture: parallel roots, not one teacher-to-student chain.","sources":[{"label":"Bell System Technical Journal paper, 1948 (IEEE Xplore, via DOI)","url":"https://doi.org/10.1002/j.1538-7305.1948.tb01338.x"}],"pos":{"row":0,"x":123}},{"id":"hebb","name":"Donald Hebb","kind":"person","year":1949,"era":"foundations","topic":"Neural networks","sub":"1949 · Hebbian learning","who":"Donald Hebb","summary":"Proposed that a connection strengthens when one neuron helps fire another.","description":"In The Organization of Behavior (1949) Hebb proposed that when one neuron repeatedly takes part in firing another, the connection between them grows stronger. Many later learning rules, from Hopfield's memory storage to models of synaptic change in reinforcement learning, are refinements of that idea.","sources":[],"pos":{"row":1,"x":665}},{"id":"minsky","name":"Marvin Minsky","kind":"person","year":1951,"era":"foundations","topic":"Foundations","sub":"1951 · SNARC","who":"Marvin Minsky","summary":"Built an early learning machine, then became a leading voice of symbolic AI.","description":"In 1951 Minsky built SNARC, a machine of \"stochastic neural-analog reinforcement calculators\", and his 1954 PhD thesis discussed reinforcement learning in such networks. He co-wrote the 1955 Dartmouth proposal, co-founded MIT's AI Project with John McCarthy in 1959, and became a central figure of symbolic AI. His 1961 essay \"Steps Toward Artificial Intelligence\" named the credit-assignment problem: how to share credit for a success among the many decisions that led to it.","sources":[{"label":"\"Steps Toward Artificial Intelligence\", 1961 (IEEE Xplore, via DOI)","url":"https://doi.org/10.1109/JRPROC.1961.287775"}],"pos":{"row":1,"x":414}},{"id":"mccarthy","name":"John McCarthy","kind":"person","year":1956,"era":"foundations","topic":"Foundations","sub":"1956 · Named the field","who":"John McCarthy","summary":"Coined \"artificial intelligence\" and championed symbolic AI.","description":"McCarthy coined the term \"artificial intelligence\" in the 1955 proposal for the 1956 Dartmouth summer workshop, written with Marvin Minsky, Nathaniel Rochester and Claude Shannon. Symbolic AI, the tradition he championed with Minsky, Allen Newell and Herbert Simon, represents knowledge explicitly and solves problems by search and by applying rules. He later created the Lisp programming language.","sources":[{"label":"Dartmouth proposal, 1955 (copy on McCarthy's Stanford site)","url":"https://www-formal.stanford.edu/jmc/history/dartmouth/dartmouth.html"}],"pos":{"row":1,"x":208}},{"id":"rosenblatt","name":"Frank Rosenblatt","kind":"person","year":1958,"era":"winter","topic":"Neural networks","sub":"1958 · Perceptron","who":"Frank Rosenblatt","summary":"The perceptron learns a decision boundary from examples.","description":"Rosenblatt's perceptron adjusts its connection weights to classify inputs, and he built the Mark I Perceptron machine to run it. A single layer has hard limits, but the perceptron established the idea of learning a decision rule from examples. He and Minsky attended the Bronx High School of Science a year apart and later stood on opposite sides of the neural-network debate.","sources":[{"label":"Psychological Review paper, 1958 (APA, via DOI)","url":"https://doi.org/10.1037/h0042519"}],"pos":{"row":0,"x":520}},{"id":"hubel","name":"Hubel & Wiesel","kind":"person","year":1959,"era":"winter","topic":"Vision","sub":"1959 · Visual cortex","who":"David Hubel and Torsten Wiesel","summary":"Found visual-cortex cells tuned to edges at particular angles.","description":"Recording from the cat's visual cortex from 1959 on, they found cells that respond to edges and bars at particular orientations, and other cells that pool such responses over a wider area. That hierarchy of simple and complex cells inspired the Neocognitron and, through it, convolutional networks. They shared the 1981 Nobel Prize in Physiology or Medicine with Roger Sperry.","sources":[{"label":"Journal of Physiology paper, 1959 (PubMed Central)","url":"https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1363130/"},{"label":"Nobel Prize in Physiology or Medicine 1981 (nobelprize.org)","url":"https://www.nobelprize.org/prizes/medicine/1981/summary/"}],"pos":{"row":0,"x":264}},{"id":"widrow","name":"Widrow & Hoff","kind":"person","year":1960,"era":"winter","topic":"Neural networks","sub":"1960 · ADALINE","who":"Bernard Widrow and Ted Hoff","summary":"The least-mean-squares (delta) rule nudges each weight by its share of the error.","description":"Bernard Widrow and Ted Hoff built ADALINE, an adaptive linear neuron, and its least-mean-squares rule, which nudges each weight in proportion to the error it caused. That delta rule is the single-layer ancestor of backpropagation, which its 1986 authors called the generalized delta rule.","sources":[{"label":"\"Adaptive Switching Circuits\", 1960 (scan on Widrow's Stanford site, PDF)","url":"https://www-isl.stanford.edu/~widrow/papers/c1960adaptiveswitching.pdf"}],"pos":{"row":1,"x":611}},{"id":"perceptrons","name":"Perceptrons (book)","kind":"work","year":1969,"era":"winter","topic":"Neural networks","sub":"1969 · Minsky, Papert","who":"Marvin Minsky and Seymour Papert","summary":"A rigorous analysis of what single-layer perceptrons cannot compute.","description":"Minsky and Seymour Papert proved that single-layer perceptrons cannot compute functions such as parity (XOR is its two-input case) or connectedness. The book was widely read as a verdict against neural networks and is often blamed for a decade of reduced interest and funding, though historians still debate how large its effect was.","sources":[],"pos":{"row":1,"x":413}},{"id":"linnainmaa","name":"Seppo Linnainmaa","kind":"person","year":1970,"era":"winter","topic":"Neural networks","sub":"1970 · Reverse-mode AD","who":"Seppo Linnainmaa","summary":"Described reverse-mode automatic differentiation, the general method behind backprop.","description":"His 1970 master's thesis at the University of Helsinki (in Finnish) described what is now called reverse-mode automatic differentiation: get every gradient of a calculation in one backward pass. He used it to estimate rounding errors, not to train networks, and published the results in English in 1976. Backpropagation is this method applied to neural networks.","sources":[{"label":"BIT Numerical Mathematics paper, 1976 (Springer)","url":"https://doi.org/10.1007/BF01931367"},{"label":"Griewank, \"Who invented the reverse mode of differentiation?\", 2012 (EMS Press)","url":"https://ems.press/books/dms/251/4949"}],"pos":{"row":1,"x":134}},{"id":"werbos","name":"Paul Werbos","kind":"person","year":1974,"era":"winter","topic":"Neural networks","sub":"1974 · Backprop thesis","who":"Paul Werbos","summary":"Proposed propagating derivatives backward to train models, then neural networks.","description":"His 1974 Harvard PhD thesis developed the backward propagation of derivatives for fitting models and briefly discussed neural networks; his 1982 paper applied the method to neural networks explicitly. Historians disagree about how much of the neural-network method the thesis already contained. The work drew little attention until backprop was rediscovered and popularized in the mid 1980s.","sources":[{"label":"\"Applications of advances in nonlinear sensitivity analysis\", 1982 (Springer)","url":"https://doi.org/10.1007/BFb0006203"}],"pos":{"row":1,"x":802}},{"id":"fukushima","name":"Kunihiko Fukushima","kind":"person","year":1980,"era":"connectionism","topic":"Vision","sub":"1980 · Neocognitron","who":"Kunihiko Fukushima","summary":"Stacked feature detectors and pooling layers, inspired by Hubel and Wiesel.","description":"The Neocognitron (Biological Cybernetics, 1980) stacked alternating layers of feature-detecting and pooling cells, modeled on Hubel and Wiesel's simple and complex cells, to recognize patterns wherever they appear. It had the layered convolutional architecture but organized itself \"without a teacher\", not by backpropagation.","sources":[{"label":"Biological Cybernetics paper, 1980 (Springer)","url":"https://doi.org/10.1007/BF00344251"}],"pos":{"row":0,"x":293}},{"id":"hopfield","name":"John Hopfield","kind":"person","year":1982,"era":"connectionism","topic":"Neural networks","sub":"1982 · Hopfield network","who":"John Hopfield","summary":"A network that settles into stored memories, described with the physics of magnets.","description":"His 1982 network stores patterns as low-energy states: given a partial or noisy pattern, it updates step by step until it settles into the closest stored memory, like a ball rolling into a valley. The description borrowed the physics of magnetic spin systems and drew physicists into neural networks. He shared the 2024 Nobel Prize in Physics with Geoffrey Hinton.","sources":[{"label":"PNAS paper, 1982 (PubMed Central)","url":"https://www.ncbi.nlm.nih.gov/pmc/articles/PMC346238/"},{"label":"Nobel Prize in Physics 2024 press release (nobelprize.org)","url":"https://www.nobelprize.org/prizes/physics/2024/press-release/"}],"pos":{"row":0,"x":710}},{"id":"backprop","name":"Backpropagation","kind":"work","year":1986,"era":"connectionism","topic":"Neural networks","sub":"1986 · Rumelhart et al.","who":"David Rumelhart, Geoffrey Hinton and Ronald Williams","summary":"Hidden layers learn useful representations when output errors are sent backward.","description":"The Nature paper \"Learning representations by back-propagating errors\" (9 October 1986) and a longer chapter in the Parallel Distributed Processing volumes showed that propagating output errors backward through a network lets its hidden units learn useful internal representations. The authors popularized the method for neural networks; they did not invent all of its mathematics (see Linnainmaa and Werbos), and the chapter notes that David Parker and Yann LeCun had reached similar rules. David Rumelhart led the PDP group in San Diego.","sources":[{"label":"Nature paper, 1986","url":"https://www.nature.com/articles/323533a0"},{"label":"PDP chapter, \"Learning internal representations by error propagation\", 1986 (PDF copy, University of Waterloo)","url":"https://cs.uwaterloo.ca/~y328yu/classics/bp.pdf"}],"pos":{"row":0,"x":506},"quote":{"text":"In particular, the back propagation algorithm was reinvented by David Rumelhart","speaker":"Geoffrey Hinton","show":"StarTalk","title":"Is AI Hiding Its Full Power? With Geoffrey Hinton","date":"28 February 2026","time":"1:16:32","url":"https://www.youtube.com/watch?v=l6ZcFa8pybE&t=4590s","label":"StarTalk video at 1:16:32 (YouTube)","note":"Correcting a host who credited AI to Hinton's own work. Wording from the video's original English captions (YouTube, auto-generated); speaker as labeled in The Singju Post's transcript of the episode."}},{"id":"hinton","name":"Geoffrey Hinton","kind":"person","year":1986,"era":"connectionism","topic":"Neural networks","sub":"1986 · Backprop, Boltzmann","who":"Geoffrey Hinton","summary":"Made neural networks a practical research program, from Boltzmann machines to AlexNet.","description":"Co-author of the 1986 backprop paper. With Terrence Sejnowski he invented the Boltzmann machine (1983), using the Hopfield network as a starting point, and they published its learning algorithm with David Ackley in 1985. His deep belief nets (2006) helped restart interest in deep networks, and his Toronto group hosted Yann LeCun as a postdoc (1987 to 1988) and trained Ilya Sutskever and Alex Krizhevsky. He shared the 2018 ACM Turing Award with Yoshua Bengio and Yann LeCun, and the 2024 Nobel Prize in Physics with John Hopfield.","sources":[{"label":"ACM Turing Award 2018 announcement (acm.org)","url":"https://awards.acm.org/about/2018-turing"},{"label":"Nobel Prize in Physics 2024 press release (nobelprize.org)","url":"https://www.nobelprize.org/prizes/physics/2024/press-release/"},{"label":"Boltzmann machine paper, 1985 (PDF on Hinton's site)","url":"https://www.cs.toronto.edu/~hinton/absps/cogscibm.pdf"},{"label":"Deep belief nets paper, 2006 (PDF on Hinton's site)","url":"https://www.cs.toronto.edu/~hinton/absps/fastnc.pdf"}],"quote":{"text":"It's a trillion real numbers and nobody quite knows how they work.","speaker":"Geoffrey Hinton","show":"StarTalk","title":"Is AI Hiding Its Full Power? With Geoffrey Hinton","date":"28 February 2026","time":"52:01","url":"https://www.youtube.com/watch?v=l6ZcFa8pybE&t=3121s","label":"StarTalk video at 52:01 (YouTube)","note":"Wording from the video's original English captions (YouTube, auto-generated); speaker as labeled in The Singju Post's transcript of the episode."},"pos":{"row":1,"x":606}},{"id":"rl","name":"Sutton & Barto","kind":"person","year":1988,"era":"connectionism","topic":"Reinforcement learning","sub":"1988 · TD learning","who":"Richard Sutton and Andrew Barto","summary":"Laid the foundations of reinforcement learning: learning from actions and their consequences.","description":"Reinforcement learning trains an agent to choose actions that increase its long-run reward. Barto supervised Sutton's 1984 PhD at UMass Amherst; with Charles Anderson they introduced actor-critic learning (1983), and Sutton's own 1988 paper made temporal-difference learning a general prediction method. Their textbook Reinforcement Learning: An Introduction (1998, second edition 2018) became the field's standard reference, and they received the 2024 ACM Turing Award. The field also has roots in psychology, optimal control and dynamic programming.","sources":[{"label":"Sutton and Barto textbook, free online (incompleteideas.net)","url":"http://incompleteideas.net/book/the-book-2nd.html"},{"label":"Sutton's temporal-difference paper, 1988 (Springer)","url":"https://doi.org/10.1007/BF00115009"},{"label":"ACM Turing Award 2024 announcement (acm.org)","url":"https://awards.acm.org/about/2024-turing"}],"pos":{"row":1,"x":130}},{"id":"lecun","name":"Yann LeCun","kind":"person","year":1989,"era":"connectionism","topic":"Vision","sub":"1989 · ConvNets","who":"Yann LeCun","summary":"Trained convolutional networks with backprop to read handwriting.","description":"After a postdoc in Hinton's Toronto group (1987 to 1988), LeCun joined Bell Labs and trained convolutional networks with backpropagation to read handwritten digits. A convolutional network reuses the same small feature detectors across the whole image. The line led to LeNet-5 (1998), and a check-reading system he helped develop read an estimated 10 percent of the checks written in the US. He shared the 2018 ACM Turing Award. Earlier convolutional ideas existed (Fukushima); his contribution was not every ingredient.","sources":[{"label":"LeNet page on LeCun's site","url":"http://yann.lecun.com/exdb/lenet/"},{"label":"LeCun's home page (the check-reading figure)","url":"http://yann.lecun.com/"},{"label":"ACM Turing Award profile (acm.org)","url":"https://amturing.acm.org/award_winners/lecun_6017366.cfm"}],"pos":{"row":1,"x":408}},{"id":"lstm","name":"LSTM","kind":"work","year":1997,"era":"connectionism","topic":"Language","sub":"1997 · Hochreiter, Schmidhuber","who":"Sepp Hochreiter and Jürgen Schmidhuber","summary":"Gated memory cells that let recurrent networks learn across long time gaps.","description":"Hochreiter's 1991 diploma thesis at TU Munich, advised by Jürgen Schmidhuber, analyzed why error signals vanish in recurrent networks trained by backpropagation. Their 1997 Long Short-Term Memory cell addressed this with gated memory, and LSTMs became the leading sequence models until Transformers spread after 2017. LSTM is one influential branch, not a component of the Transformer.","sources":[{"label":"Neural Computation paper, 1997 (MIT Press, via DOI)","url":"https://doi.org/10.1162/neco.1997.9.8.1735"},{"label":"LSTM paper PDF (JKU Linz)","url":"https://www.bioinf.jku.at/publications/older/2604.pdf"},{"label":"Schmidhuber on Hochreiter's 1991 thesis (IDSIA)","url":"https://people.idsia.ch/~juergen/fundamentaldeeplearningproblem.html"}],"pos":{"row":1,"x":857}},{"id":"bengio","name":"Yoshua Bengio","kind":"person","year":2003,"era":"scale","topic":"Language","sub":"2003 · Neural LM","who":"Yoshua Bengio","summary":"Neural language models that learn a vector for every word.","description":"His neural probabilistic language model (NIPS 2000; journal version in JMLR, 2003, with Réjean Ducharme, Pascal Vincent and Christian Jauvin) learned a vector for each word together with next-word prediction, an important ancestor of today's language models. His Montreal group also produced the attention mechanism of Bahdanau, Cho and Bengio and, with Ian Goodfellow, generative adversarial networks. He was a postdoc in LeCun's group at Bell Labs (1992 to 1993) and shared the 2018 ACM Turing Award.","sources":[{"label":"JMLR paper, 2003","url":"https://www.jmlr.org/papers/v3/bengio03a.html"},{"label":"ACM Turing Award 2018 announcement (acm.org)","url":"https://awards.acm.org/about/2018-turing"}],"pos":{"row":0,"x":475}},{"id":"imagenet","name":"ImageNet","kind":"work","year":2009,"era":"scale","topic":"Vision","sub":"2009 · Fei-Fei Li et al.","who":"Jia Deng, Wei Dong, Richard Socher, Li-Jia Li, Kai Li and Li Fei-Fei","summary":"A huge labeled image dataset, and the competition that measured progress.","description":"Fei-Fei Li and collaborators organized millions of labeled images by the WordNet hierarchy; the 2009 paper already held 3.2 million images in 5,247 categories, and the database kept growing. Its yearly challenge (ILSVRC, from 2010) made progress measurable at scale. Data and evaluation were crucial ingredients beside model design and computing power.","sources":[{"label":"ImageNet website","url":"https://www.image-net.org/"},{"label":"ImageNet CVPR 2009 paper (PDF on image-net.org)","url":"https://www.image-net.org/static_files/papers/imagenet_cvpr09.pdf"}],"pos":{"row":0,"x":718}},{"id":"alexnet","name":"AlexNet","kind":"work","year":2012,"era":"scale","topic":"Vision","sub":"2012 · ImageNet win","who":"Alex Krizhevsky, Ilya Sutskever and Geoffrey Hinton","summary":"A deep convolutional network on GPUs that won ImageNet 2012 by a wide margin.","description":"Trained on 1.2 million labeled images using two GPUs, it won the ILSVRC-2012 competition with a 15.3 percent top-5 error rate, against 26.2 percent for the next entry. It showed the combined power of data, computation and learned representations, and industry moved to deep learning soon after.","sources":[{"label":"NeurIPS paper, 2012 (papers.nips.cc)","url":"https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks"}],"pos":{"row":1,"x":322}},{"id":"sutskever","name":"Ilya Sutskever","kind":"person","year":2012,"era":"scale","topic":"Language","sub":"2012 · AlexNet, seq2seq","who":"Ilya Sutskever","summary":"From Hinton's lab to sequence learning and OpenAI.","description":"A doctoral student of Hinton at Toronto (thesis 2013, on training recurrent networks) and an AlexNet co-author, Sutskever then co-wrote sequence-to-sequence learning with Oriol Vinyals and Quoc Le (2014). He co-founded OpenAI and co-authored the first GPT paper. That is a personal lineage; GPT itself was the work of wider teams.","sources":[{"label":"PhD thesis, 2013 (University of Toronto, PDF)","url":"https://www.cs.utoronto.ca/~ilya/pubs/ilya_sutskever_phd_thesis.pdf"},{"label":"Sequence-to-sequence paper, 2014 (arXiv)","url":"https://arxiv.org/abs/1409.3215"}],"pos":{"row":1,"x":608}},{"id":"mikolov","name":"Tomas Mikolov","kind":"person","year":2013,"era":"sequences","topic":"Language","sub":"2013 · word2vec","who":"Tomas Mikolov, Kai Chen, Greg Corrado and Jeffrey Dean","summary":"Made good word vectors cheap to train at scale.","description":"With colleagues at Google, Mikolov's word2vec models learned high-quality word vectors from a 1.6 billion word dataset in less than a day. Such vectors capture regularities: vector(\"King\") minus vector(\"Man\") plus vector(\"Woman\") lands nearest vector(\"Queen\"). Pretrained word representations became standard practice.","sources":[{"label":"word2vec paper, 2013 (arXiv)","url":"https://arxiv.org/abs/1301.3781"}],"pos":{"row":0,"x":386}},{"id":"seq2seq","name":"Seq2seq","kind":"work","year":2014,"era":"sequences","topic":"Language","sub":"2014 · Sutskever, Vinyals, Le","who":"Ilya Sutskever, Oriol Vinyals and Quoc Le","summary":"One network reads a sentence; another writes the translation.","description":"One deep LSTM encodes the input sentence into a fixed-size vector and another decodes the translation from it, trained end to end on English to French (WMT 2014). Attention later let the decoder consult every encoder state instead of one fixed summary.","sources":[{"label":"Sequence-to-sequence paper, 2014 (arXiv)","url":"https://arxiv.org/abs/1409.3215"}],"pos":{"row":0,"x":863}},{"id":"attention","name":"Attention","kind":"work","year":2014,"era":"sequences","topic":"Language","sub":"2014 · Bahdanau, Cho, Bengio","who":"Dzmitry Bahdanau, Kyunghyun Cho and Yoshua Bengio","summary":"Let the decoder look back at the input words that matter.","description":"Bahdanau, Cho and Bengio argued that squeezing a sentence into one fixed-length vector was a bottleneck, and let the translation decoder learn to weight (attend to) the relevant source words at each step. The Transformer later made attention central and removed recurrence.","sources":[{"label":"Attention paper, 2014 (arXiv)","url":"https://arxiv.org/abs/1409.0473"}],"pos":{"row":2,"x":568}},{"id":"goodfellow","name":"Ian Goodfellow","kind":"person","year":2014,"era":"sequences","topic":"Vision","sub":"2014 · GANs","who":"Ian Goodfellow","summary":"Generative adversarial networks: a generator trained against a discriminator.","description":"In 2014 Goodfellow and colleagues at the Université de Montréal introduced generative adversarial networks, in which a generator learns to fool a discriminator that tries to tell real data from generated data. GANs drove much of the following years' progress in image synthesis, before diffusion models largely took over. His doctoral advisors were Yoshua Bengio and Aaron Courville.","sources":[{"label":"GAN paper, 2014 (arXiv)","url":"https://arxiv.org/abs/1406.2661"},{"label":"PhD thesis record (Université de Montréal)","url":"https://umontreal.scholaris.ca/items/1bc7ce66-3b25-4863-b8ec-a6ada541ab37"}],"pos":{"row":1,"x":475}},{"id":"dqn","name":"DQN","kind":"work","year":2015,"era":"sequences","topic":"Reinforcement learning","sub":"2015 · Atari from pixels","who":"Volodymyr Mnih, Koray Kavukcuoglu, David Silver and colleagues at DeepMind","summary":"Learned to play Atari games from raw screen pixels.","description":"DeepMind's deep Q-network paired Q-learning, a temporal-difference method, with a convolutional network and learned to play dozens of Atari 2600 games from screen pixels and the score, reaching human-level play on many of them (Nature, 2015). Deep learning met reinforcement learning.","sources":[{"label":"Nature paper, 2015","url":"https://doi.org/10.1038/nature14236"}],"pos":{"row":1,"x":146}},{"id":"resnet","name":"ResNet","kind":"work","year":2015,"era":"sequences","topic":"Vision","sub":"2015 · He et al.","who":"Kaiming He, Xiangyu Zhang, Shaoqing Ren and Jian Sun","summary":"Skip connections made networks over 100 layers deep trainable.","description":"Residual networks let each block learn a correction that is added to its input, which made networks up to 152 layers deep trainable and won the ILSVRC 2015 classification task. Every Transformer layer uses the same residual connections.","sources":[{"label":"ResNet paper, 2015 (arXiv)","url":"https://arxiv.org/abs/1512.03385"}],"pos":{"row":1,"x":737}},{"id":"silver","name":"David Silver","kind":"person","year":2016,"era":"sequences","topic":"Reinforcement learning","sub":"2016 · AlphaGo lead","who":"David Silver","summary":"Led the reinforcement-learning work behind AlphaGo and AlphaZero.","description":"Silver did his PhD with Richard Sutton at the University of Alberta (thesis 2009, on reinforcement learning and search in Go), co-authored DQN, and was first author of the AlphaGo and AlphaZero papers at DeepMind. In 2025 he and Sutton argued that the next era of AI will learn mainly from its own experience.","sources":[{"label":"PhD thesis, 2009 (PDF on Sutton's site)","url":"http://incompleteideas.net/papers/Silver-phd-thesis.pdf"}],"pos":{"row":2,"x":287}},{"id":"alphago","name":"AlphaGo","kind":"work","year":2016,"era":"sequences","topic":"Reinforcement learning","sub":"2016 · Beat Lee Sedol","who":"David Silver, Demis Hassabis and the AlphaGo team at DeepMind","summary":"Neural networks plus tree search plus learning beat a Go champion.","description":"AlphaGo combined policy and value networks with Monte Carlo tree search, learning first from human games and then by reinforcement learning through self-play. It beat Fan Hui 5 to 0 in October 2015 and Lee Sedol 4 to 1 in Seoul in March 2016. Demis Hassabis co-founded DeepMind; many collaborators made the system possible.","sources":[{"label":"DeepMind AlphaGo page","url":"https://deepmind.google/research/alphago/"},{"label":"Nature paper, 2016","url":"https://doi.org/10.1038/nature16961"}],"pos":{"row":2,"x":97}},{"id":"transformer","name":"Transformer","kind":"work","year":2017,"era":"attention","topic":"Language","sub":"2017 · Vaswani et al.","who":"Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan Gomez, Łukasz Kaiser and Illia Polosukhin","summary":"\"Attention Is All You Need\": attention without recurrence.","description":"The Transformer dropped recurrence and convolution, building translation from stacked self-attention and feed-forward layers with residual connections. It trains in parallel on GPUs, which made massive scaling practical. The eight authors were Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan Gomez, Łukasz Kaiser and Illia Polosukhin.","sources":[{"label":"\"Attention Is All You Need\", 2017 (arXiv)","url":"https://arxiv.org/abs/1706.03762"}],"pos":{"row":0,"x":654}},{"id":"alphazero","name":"AlphaZero","kind":"work","year":2017,"era":"attention","topic":"Reinforcement learning","sub":"2017 · Self-play","who":"David Silver and the DeepMind team","summary":"Learned chess, shogi and Go from the rules alone, by self-play.","description":"AlphaZero learned chess, shogi and Go through self-play combined with search, starting from random play and given no domain knowledge except the rules (preprint 2017, Science 2018). Unlike the original AlphaGo it used no human game records; its architecture and algorithm were still designed by people.","sources":[{"label":"DeepMind AlphaZero and MuZero page","url":"https://deepmind.google/research/alphazero-and-muzero/"},{"label":"AlphaZero preprint, 2017 (arXiv)","url":"https://arxiv.org/abs/1712.01815"},{"label":"Science paper, 2018 (via DOI)","url":"https://doi.org/10.1126/science.aar6404"}],"pos":{"row":0,"x":204}},{"id":"rlhf","name":"RL from human preferences","kind":"work","year":2017,"era":"attention","topic":"Reinforcement learning","sub":"2017 · Christiano et al.","who":"Paul Christiano, Jan Leike, Tom Brown, Miljan Martic, Shane Legg and Dario Amodei (OpenAI and DeepMind)","summary":"Learn a reward from human comparisons, then optimize it with reinforcement learning.","description":"Instead of a hand-written reward, people compared pairs of short clips of an agent's behavior; a model learned to predict their preferences, and an RL agent optimized that learned reward, solving Atari games and simulated locomotion with human feedback on less than one percent of its interactions. The same recipe (reinforcement learning from human feedback, RLHF) was later used to fine-tune instruction-following language models.","sources":[{"label":"\"Deep reinforcement learning from human preferences\", 2017 (arXiv)","url":"https://arxiv.org/abs/1706.03741"}],"pos":{"row":1,"x":620}},{"id":"gpt","name":"GPT family","kind":"work","year":2018,"era":"attention","topic":"Language","sub":"2018 · Radford et al.","who":"Alec Radford, Karthik Narasimhan, Tim Salimans and Ilya Sutskever, then successive OpenAI teams","summary":"A Transformer decoder pretrained to predict the next token.","description":"The first GPT (2018) pretrained a Transformer decoder on next-word prediction and fine-tuned it for tasks. GPT-2 (2019) and GPT-3 (2020) scaled the same objective and showed broad abilities, including learning new tasks from a few examples in the prompt. GPT is a team lineage, not one researcher's invention.","sources":[{"label":"GPT-1 paper, 2018 (OpenAI, PDF)","url":"https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf"},{"label":"GPT-3 paper, 2020 (arXiv)","url":"https://arxiv.org/abs/2005.14165"}],"pos":{"row":1,"x":880}},{"id":"bert","name":"BERT","kind":"work","year":2018,"era":"attention","topic":"Language","sub":"2018 · Devlin et al.","who":"Jacob Devlin, Ming-Wei Chang, Kenton Lee and Kristina Toutanova","summary":"A Transformer encoder pretrained by filling in masked words.","description":"BERT pretrained a bidirectional Transformer encoder to predict masked words, then fine-tuned it with one extra output layer per task, setting new state-of-the-art results on eleven language tasks. It is a different branch from GPT's left-to-right decoder.","sources":[{"label":"BERT paper, 2018 (arXiv)","url":"https://arxiv.org/abs/1810.04805"}],"pos":{"row":0,"x":376}},{"id":"alphafold","name":"AlphaFold 2","kind":"work","year":2020,"era":"attention","topic":"Neural networks","sub":"2020 · Jumper, Hassabis","who":"John Jumper, Demis Hassabis and the DeepMind team","summary":"Predicted protein structures at near-experimental accuracy.","description":"Entered in the CASP14 assessment in 2020 and published in Nature in 2021, AlphaFold predicted protein structures competitive with experimental ones in a majority of cases, using attention-based Evoformer blocks. Demis Hassabis and John Jumper shared the 2024 Nobel Prize in Chemistry with David Baker.","sources":[{"label":"Nature paper, 2021","url":"https://doi.org/10.1038/s41586-021-03819-2"},{"label":"Nobel Prize in Chemistry 2024 (nobelprize.org)","url":"https://www.nobelprize.org/prizes/chemistry/2024/summary/"}],"pos":{"row":1,"x":99}},{"id":"agents","name":"Models that act","kind":"idea","year":2022,"era":"attention","topic":"Reinforcement learning","sub":"2022 · ReAct, tool use","who":"Research across language models, robotics, control and reinforcement learning","summary":"Language models that choose an action, observe the result and continue.","description":"A model can choose a tool action, receive an observation and continue; ReAct (Yao and colleagues, 2022) interleaved reasoning traces with such actions. That is an interaction loop. It becomes a training loop only when an algorithm updates the model or policy from the collected experience: ordinary inference does not change model weights.","loop":["Choose an action","Observe a consequence","Evaluate","Update during training"],"sources":[{"label":"ReAct paper, 2022 (arXiv)","url":"https://arxiv.org/abs/2210.03629"}],"pos":{"row":2,"x":485}},{"id":"chatgpt","name":"ChatGPT + RLHF","kind":"work","year":2022,"era":"attention","topic":"Language","sub":"2022 · OpenAI","who":"Long Ouyang and colleagues (InstructGPT), and OpenAI","summary":"Fine-tuning with human feedback turned a text predictor into an assistant.","description":"InstructGPT (early 2022) fine-tuned GPT-3 on human demonstrations and then with reinforcement learning from human feedback. ChatGPT, released on 30 November 2022 as a sibling of InstructGPT and fine-tuned from a GPT-3.5 model, brought the whole lineage to the public.","sources":[{"label":"InstructGPT paper, 2022 (arXiv)","url":"https://arxiv.org/abs/2203.02155"},{"label":"\"Introducing ChatGPT\", 2022 (openai.com)","url":"https://openai.com/index/chatgpt/"}],"pos":{"row":2,"x":773}},{"id":"environment","name":"Learning from experience","kind":"idea","year":2025,"era":"attention","topic":"Reinforcement learning","sub":"2025 · Silver, Sutton","who":"David Silver and Richard Sutton","summary":"Agents that improve from their own interaction with an environment.","description":"A useful training environment supplies observations, permitted actions, consequences and a way to evaluate. Silver and Sutton (2025) argue that the next gains will come from agents that learn mainly from their own experience, with rewards grounded in the environment rather than in human prejudgement of each answer. This is a promising direction, not proof that environment design beats model scaling.","sources":[{"label":"Silver and Sutton, \"Welcome to the Era of Experience\", 2025 (PDF hosted by Google DeepMind)","url":"https://storage.googleapis.com/deepmind-media/Era-of-Experience%20/The%20Era%20of%20Experience%20Paper.pdf"}],"pos":{"row":2,"x":254}}],"edges":[{"from":"turing","to":"mcp","type":"idea","note":"McCulloch and Pitts argued that their nets, given a tape, compute the same numbers as a Turing machine."},{"from":"turing","to":"shannon","type":"idea","note":"They met at Bell Labs in 1943 and talked about thinking machines; in 1956 Shannon showed a universal Turing machine needs only two internal states."},{"from":"shannon","to":"mccarthy","type":"collab","note":"Co-signed the 1955 Dartmouth proposal and co-edited Automata Studies (1956)."},{"from":"mccarthy","to":"minsky","type":"collab","note":"Co-wrote the Dartmouth proposal, then co-founded MIT's AI Project in 1959."},{"from":"mcp","to":"minsky","type":"idea","note":"Minsky's SNARC and 1954 thesis explored networks of artificial neurons in their tradition."},{"from":"mcp","to":"rosenblatt","type":"idea","note":"Threshold neurons became the perceptron's units."},{"from":"hebb","to":"rosenblatt","type":"idea","note":"Learning by strengthening connections."},{"from":"hebb","to":"hopfield","type":"idea","note":"Hopfield's storage rule strengthens links between units that are active together: Hebb's idea in mathematical form."},{"from":"minsky","to":"rl","type":"idea","note":"Minsky's 1961 \"Steps\" essay named the credit-assignment problem that reinforcement learning takes on."},{"from":"shannon","to":"rl","type":"idea","note":"Sutton and Barto's history of the field cites Shannon's maze-learning mouse Theseus (1952) and his idea of a chess program that improves its own evaluation."},{"from":"minsky","to":"perceptrons","type":"collab","note":"Minsky co-wrote the book with Seymour Papert."},{"from":"rosenblatt","to":"perceptrons","type":"critique","note":"The book analysed the limits of single-layer perceptrons."},{"from":"hubel","to":"fukushima","type":"idea","note":"Simple and complex cells inspired the Neocognitron's layers."},{"from":"widrow","to":"backprop","type":"idea","note":"The PDP chapter called backprop \"a clear generalization of the delta rule\": the generalized delta rule."},{"from":"rosenblatt","to":"backprop","type":"idea","note":"Multilayer perceptrons, finally trainable."},{"from":"linnainmaa","to":"backprop","type":"precursor","note":"Reverse-mode differentiation, the mathematics under backprop, was described in 1970."},{"from":"werbos","to":"backprop","type":"precursor","note":"Werbos applied backward derivatives to neural networks by 1982; the method was rediscovered in the 1980s."},{"from":"perceptrons","to":"backprop","type":"critique","note":"The PDP volumes answered the book: networks with hidden units learn functions such as XOR."},{"from":"backprop","to":"hinton","type":"collab","note":"Hinton co-authored the 1986 paper with Rumelhart and Williams."},{"from":"hopfield","to":"hinton","type":"idea","note":"Hinton used the Hopfield network as the foundation for the Boltzmann machine (with Sejnowski), adding noise and hidden units."},{"from":"hinton","to":"lecun","type":"mentor","note":"LeCun was a postdoc in Hinton's Toronto group, 1987 to 1988."},{"from":"fukushima","to":"lecun","type":"idea","note":"The Neocognitron's layered architecture, now trained end to end by backprop."},{"from":"backprop","to":"lecun","type":"idea","note":"LeCun trained his convolutional networks with backprop."},{"from":"backprop","to":"lstm","type":"idea","note":"Backprop through time suffered from vanishing gradients, which Hochreiter analyzed in 1991."},{"from":"backprop","to":"bengio","type":"idea","note":"Bengio, Simard and Frasconi (1994) showed why gradient descent struggles to learn long-range dependencies."},{"from":"lecun","to":"bengio","type":"mentor","note":"Bengio was a postdoc in LeCun's group at Bell Labs, 1992 to 1993; they co-wrote the 1998 LeNet-5 paper."},{"from":"hinton","to":"sutskever","type":"mentor","note":"Hinton advised Sutskever's Toronto PhD (thesis 2013)."},{"from":"hinton","to":"alexnet","type":"collab","note":"Hinton co-authored AlexNet with his students Krizhevsky and Sutskever."},{"from":"sutskever","to":"alexnet","type":"collab","note":"Sutskever co-authored AlexNet."},{"from":"lecun","to":"alexnet","type":"idea","note":"A bigger, GPU-trained convolutional network in the LeNet mold."},{"from":"imagenet","to":"alexnet","type":"idea","note":"The ImageNet challenge supplied 1.2 million labeled training images."},{"from":"imagenet","to":"resnet","type":"idea","note":"ResNet won the ILSVRC 2015 classification task."},{"from":"bengio","to":"mikolov","type":"idea","note":"word2vec builds on and cites Bengio's neural language model, and makes word vectors fast to train."},{"from":"bengio","to":"attention","type":"collab","note":"Bengio co-authored the attention paper with Bahdanau and Cho."},{"from":"bengio","to":"goodfellow","type":"mentor","note":"Bengio co-advised Goodfellow's PhD with Aaron Courville."},{"from":"lstm","to":"seq2seq","type":"idea","note":"Stacked LSTMs encode and decode whole sentences."},{"from":"sutskever","to":"seq2seq","type":"collab","note":"First author of the 2014 paper, with Vinyals and Le."},{"from":"alexnet","to":"resnet","type":"idea","note":"Much deeper convolutional networks, made trainable with skip connections."},{"from":"alexnet","to":"dqn","type":"idea","note":"DQN read raw Atari pixels with a convolutional network."},{"from":"rl","to":"silver","type":"mentor","note":"Silver did his PhD with Sutton at the University of Alberta (thesis 2009)."},{"from":"rl","to":"dqn","type":"idea","note":"DQN's learning rule is Q-learning, a temporal-difference method."},{"from":"dqn","to":"silver","type":"collab","note":"Silver co-authored DQN before leading AlphaGo."},{"from":"silver","to":"alphago","type":"collab","note":"First author of the AlphaGo paper."},{"from":"dqn","to":"alphago","type":"idea","note":"Deep networks trained with reinforcement learning, now combined with tree search for Go."},{"from":"alphago","to":"alphazero","type":"idea","note":"Dropped human game records: learned from the rules by self-play."},{"from":"silver","to":"alphazero","type":"collab","note":"First author of the AlphaZero paper."},{"from":"attention","to":"transformer","type":"idea","note":"Kept attention, dropped recurrence."},{"from":"seq2seq","to":"transformer","type":"idea","note":"Same encoder-decoder setup, same translation benchmark (WMT 2014)."},{"from":"resnet","to":"transformer","type":"idea","note":"Residual connections around every sublayer."},{"from":"transformer","to":"bert","type":"idea","note":"Encoder stack, pretrained on masked words."},{"from":"transformer","to":"gpt","type":"idea","note":"Decoder stack, pretrained on next-word prediction."},{"from":"sutskever","to":"gpt","type":"collab","note":"Sutskever co-founded OpenAI and co-authored the first GPT paper."},{"from":"mikolov","to":"bert","type":"idea","note":"Pretrained word vectors grew into pretrained whole models."},{"from":"gpt","to":"chatgpt","type":"idea","note":"ChatGPT was fine-tuned from a GPT-3.5 model."},{"from":"rlhf","to":"chatgpt","type":"idea","note":"InstructGPT and ChatGPT were fine-tuned with reinforcement learning from human feedback."},{"from":"rl","to":"rlhf","type":"idea","note":"Standard RL algorithms optimize a reward model learned from human comparisons."},{"from":"transformer","to":"alphafold","type":"idea","note":"Attention-based Evoformer blocks."},{"from":"alphago","to":"alphafold","type":"collab","note":"Same DeepMind lineage: Demis Hassabis co-authored both papers."},{"from":"gpt","to":"agents","type":"idea","note":"Large pretrained language models became the part that chooses the actions."},{"from":"rl","to":"agents","type":"idea","note":"Agents that act in a loop borrow reinforcement learning's vocabulary: actions, observations, rewards."},{"from":"agents","to":"environment","type":"idea","note":"From acting in a loop to learning from the consequences."},{"from":"alphazero","to":"environment","type":"idea","note":"Silver and Sutton cite AlphaZero as an agent that discovered new strategies from its own experience."},{"from":"rlhf","to":"environment","type":"critique","note":"Silver and Sutton argue rewards should be grounded in the environment, not in human prejudgement of each answer."},{"from":"silver","to":"environment","type":"collab","note":"Silver and Sutton co-wrote the 2025 essay."}],"tour":[{"id":"turing","text":"1936 and 1950: Turing defines what a machine can compute, then asks whether machines can think. Every later system runs on his idea of a universal machine."},{"id":"mccarthy","text":"1956: McCarthy names the field for the Dartmouth workshop. Symbolic AI, built on explicit rules and search, leads for decades."},{"id":"rosenblatt","text":"1958: Rosenblatt's perceptron learns from examples. In 1969 Minsky and Papert show the limits of a single layer, and neural networks fall out of favor."},{"id":"backprop","text":"1986: Rumelhart, Hinton and Williams show backprop training hidden layers, on mathematics Linnainmaa and Werbos had described earlier."},{"id":"hinton","text":"Hinton keeps neural networks going through the lean years: Boltzmann machines, deep belief nets, and a Toronto group that trains a generation."},{"id":"rl","text":"Meanwhile Sutton and Barto build reinforcement learning: learning which actions pay off from trial, error and reward."},{"id":"lecun","text":"1989: LeCun trains convolutional networks with backprop to read handwriting; a check reader he helped build came to read about a tenth of US checks."},{"id":"imagenet","text":"2009: ImageNet supplies millions of labeled images and a yearly contest that makes progress measurable."},{"id":"alexnet","text":"2012: AlexNet, from Hinton's lab, wins ImageNet by a wide margin using two GPUs. Deep learning takes over."},{"id":"attention","text":"2014: Neural networks learn to translate, and attention lets them look back at the words that matter."},{"id":"alphago","text":"2016: AlphaGo combines deep networks, tree search and reinforcement learning to beat Lee Sedol at Go."},{"id":"transformer","text":"2017: The Transformer keeps attention and drops recurrence, so training scales across many GPUs."},{"id":"chatgpt","text":"2018 to 2022: GPT models scale next-word prediction; fine-tuning with human feedback turns them into assistants like ChatGPT."},{"id":"agents","text":"Now: models that act choose a tool, observe the result and continue. Learning from that experience is the open frontier."}],"aliases":{"rumelhart":"backprop","suttonbarto":"rl","sutton":"rl","barto":"rl","feifei":"imagenet","deepmind":"dqn","symbolic":"mccarthy","feedback":"shannon","perceptron":"rosenblatt","seppo":"linnainmaa","krizhevsky":"alexnet","fei-fei":"imagenet","hassabis":"alphago","jumper":"alphafold","ilya":"sutskever","geoffrey-hinton":"hinton"}}</script>
+<script>
+(() => {
+"use strict";
+const D = JSON.parse(document.getElementById("data").textContent);
+const NODES = D.nodes, EDGES = D.edges, TYPES = D.types, TOPICS = D.topics, ERAS = D.eras, TOUR = D.tour, ALIASES = D.aliases;
+const $ = id => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+const W = 980, H = 44, ROW = 74, PAD_T = 40, PAD_B = 16;
+const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+const narrow = matchMedia("(max-width: 760px)");
+const byId = new Map(NODES.map(n => [n.id, n]));
+const typeById = new Map(TYPES.map(t => [t.id, t]));
+const topicColor = new Map(TOPICS.map(t => [t.id, t.color]));
+const eraById = new Map(ERAS.map(e => [e.id, e]));
+const KIND = {person: "Person", work: "Work", idea: "Idea"};
+for (const e of EDGES) if (!byId.has(e.from) || !byId.has(e.to)) console.error("Edge refers to an unknown name", e);
+EDGES.forEach((e, i) => e.i = i);
+const MIN_YEAR = Math.min(...NODES.map(n => n.year)), MAX_YEAR = Math.max(...NODES.map(n => n.year));
+
+/* ---------- helpers ---------- */
+function svg(tag, attrs, parent){
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function h(tag, attrs, ...kids){
+  const e = document.createElement(tag);
+  if (attrs) for (const k in attrs){
+    if (k === "class") e.className = attrs[k];
+    else if (k === "text") e.textContent = attrs[k];
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), attrs[k]);
+    else if (attrs[k] !== false && attrs[k] != null) e.setAttribute(k, attrs[k]);
+  }
+  for (const c of kids) if (c != null) e.append(c);
+  return e;
+}
+function swatch(type, len){
+  const t = typeById.get(type), s = svg("svg", {width: len || 24, height: 10, class: "swatch", "aria-hidden": "true"});
+  svg("line", {x1: 1, y1: 5, x2: (len || 24) - 1, y2: 5, stroke: t.color, "stroke-width": Math.max(2, t.width), "stroke-dasharray": t.dash || "none", "stroke-linecap": t.id === "critique" ? "round" : "butt"}, s);
+  return s;
+}
+function dot(color){ const d = h("span", {class: "dot", "aria-hidden": "true"}); d.style.setProperty("--c", color); return d; }
+
+/* ---------- layout ---------- */
+const measure = document.createElement("canvas").getContext("2d");
+const FONT = getComputedStyle(document.body).fontFamily;
+function textW(str, weight, size){ measure.font = `${weight} ${size}px ${FONT}`; return measure.measureText(str).width; }
+NODES.forEach(n => { n.w = Math.ceil(Math.max(textW(n.name, 650, 13), textW(n.sub, 400, 11)) + 34); });
+let top = 0;
+const bands = ERAS.map(era => {
+  const members = NODES.filter(n => n.era === era.id);
+  const rows = Math.max(1, ...members.map(n => n.pos.row + 1));
+  const b = {era, y0: top, y1: top + PAD_T + rows * ROW - (ROW - H) + PAD_B};
+  members.forEach(n => { n.x = n.pos.x; n.y = top + PAD_T + n.pos.row * ROW + H / 2; });
+  top = b.y1;
+  return b;
+});
+const HEIGHT = top;
+function sameRowBlocked(a, b){
+  const lo = Math.min(a.x, b.x), hi = Math.max(a.x, b.x);
+  return NODES.some(n => n !== a && n !== b && Math.abs(n.y - a.y) < 4 && n.x > lo && n.x < hi);
+}
+function edgeKind(a, b){
+  if (Math.abs(b.y - a.y) < 4) return sameRowBlocked(a, b) ? "arc" : "flat";
+  return b.y > a.y ? "down" : "up";
+}
+/* spread the ends of the lines that leave a box's bottom or enter its top, so arrowheads do not pile up */
+function assignPorts(){
+  const outB = new Map(), inT = new Map();
+  const push = (m, k, e) => { if (!m.has(k)) m.set(k, []); m.get(k).push(e); };
+  for (const e of EDGES){
+    const a = byId.get(e.from), b = byId.get(e.to);
+    e.kind = edgeKind(a, b); e.ox = 0; e.ix = 0;
+    if (e.kind === "down"){ push(outB, e.from, e); push(inT, e.to, e); }
+    else if (e.kind === "arc") push(inT, e.to, e);
+  }
+  const spread = (list, n, key) => {
+    const k = list.length, step = k > 1 ? Math.min(16, Math.max(0, n.w - 46) / (k - 1)) : 0;
+    list.forEach((e, i) => { e[key] = (i - (k - 1) / 2) * step; });
+  };
+  for (const [id, list] of outB){ list.sort((p, q) => byId.get(p.to).x - byId.get(q.to).x); spread(list, byId.get(id), "ox"); }
+  for (const [id, list] of inT){ list.sort((p, q) => byId.get(p.from).x - byId.get(q.from).x); spread(list, byId.get(id), "ix"); }
+}
+/* a line that would pass behind an unrelated box is bent around it through a waypoint beside that box */
+function bez(p0, p1, p2, p3, steps){
+  const out = [];
+  for (let i = 0; i <= steps; i++){ const t = i / steps, u = 1 - t;
+    out.push([u*u*u*p0[0] + 3*u*u*t*p1[0] + 3*u*t*t*p2[0] + t*t*t*p3[0], u*u*u*p0[1] + 3*u*u*t*p1[1] + 3*u*t*t*p2[1] + t*t*t*p3[1]]); }
+  return out;
+}
+function downSegments(e, vias){
+  const a = byId.get(e.from), b = byId.get(e.to);
+  const pts = [[a.x + e.ox, a.y + H / 2], ...(vias || []).map(v => [v.x, v.y]), [b.x + e.ix, b.y - (H / 2 + 3)]];
+  const segs = [];
+  for (let i = 0; i + 1 < pts.length; i++){
+    const p = pts[i], q = pts[i + 1], m = (q[1] - p[1]) / 2;
+    segs.push([p, [p[0], p[1] + m], [q[0], q[1] - m], q]);
+  }
+  return segs;
+}
+function blockers(e, segs){
+  const pts = segs.flatMap(s => bez(...s, 24)), hit = [];
+  for (const n of NODES){
+    if (n.id === e.from || n.id === e.to) continue;
+    const x0 = n.x - n.w / 2 - 4, x1 = n.x + n.w / 2 + 4, y0 = n.y - H / 2 - 3, y1 = n.y + H / 2 + 3;
+    const p = pts.find(([x, y]) => x > x0 && x < x1 && y > y0 && y < y1);
+    if (p) hit.push({n, p});
+  }
+  return hit.sort((p, q) => p.n.y - q.n.y);
+}
+function gapCandidates(n, nearX){
+  const row = NODES.filter(m => Math.abs(m.y - n.y) < 4).sort((l, r) => l.x - r.x);
+  const c = [Math.max(10, (row[0].x - row[0].w / 2) / 2)];
+  for (let i = 0; i < row.length; i++){
+    const right = row[i].x + row[i].w / 2, next = i + 1 < row.length ? row[i + 1].x - row[i + 1].w / 2 : W;
+    if (next - right > 24) c.push(right + 14, next - 14, (right + next) / 2);
+  }
+  return c.filter(x => x > 6 && x < W - 6).sort((l, r) => Math.abs(l - nearX) - Math.abs(r - nearX));
+}
+function solveRoute(e, vias, depth){
+  const hit = blockers(e, downSegments(e, vias));
+  let best = {vias, count: hit.length};
+  if (!hit.length || !depth) return best;
+  const {n, p} = hit[0];
+  for (const x of gapCandidates(n, p[0]).slice(0, 6)){
+    const v = [...vias, {x, y: n.y - H / 2}, {x, y: n.y + H / 2}].sort((l, r) => l.y - r.y);
+    const r = solveRoute(e, v, depth - 1);
+    if (r.count < best.count){ best = r; if (!r.count) break; }
+  }
+  return best;
+}
+function routeAround(){
+  for (const e of EDGES) e.vias = e.kind === "down" ? solveRoute(e, [], 3).vias : [];
+}
+function edgePath(e){
+  const a = byId.get(e.from), b = byId.get(e.to);
+  if (e.kind === "down"){
+    return downSegments(e, e.vias).map((s, i) => (i ? "" : `M${s[0][0]},${s[0][1]} `) + `C${s[1][0]},${s[1][1]} ${s[2][0]},${s[2][1]} ${s[3][0]},${s[3][1]}`).join(" ");
+  }
+  if (e.kind === "flat"){
+    const dir = b.x > a.x ? 1 : -1;
+    const x1 = a.x + dir * a.w / 2, x2 = b.x - dir * (b.w / 2 + 3), mx = (x1 + x2) / 2;
+    return `M${x1},${a.y} C${mx},${a.y} ${mx},${b.y} ${x2},${b.y}`;
+  }
+  if (e.kind === "arc"){
+    const y1 = a.y - H / 2, y2 = b.y - H / 2 - 3, lift = 30, bx = b.x + e.ix;
+    return `M${a.x},${y1} C${a.x},${y1 - lift} ${bx},${y2 - lift} ${bx},${y2}`;
+  }
+  const s = e.kind === "down" ? 1 : -1;
+  const ax = a.x + e.ox, bx = b.x + e.ix;
+  const y1 = a.y + s * H / 2, y2 = b.y - s * (H / 2 + 3), m = (y2 - y1) / 2;
+  return `M${ax},${y1} C${ax},${y1 + m} ${bx},${y2 - m} ${bx},${y2}`;
+}
+assignPorts();
+routeAround();
+
+/* ---------- build the SVG ---------- */
+const tree = $("tree");
+tree.setAttribute("viewBox", `0 0 ${W} ${HEIGHT}`);
+const defs = svg("defs", {}, tree);
+TYPES.forEach(t => {
+  const m = svg("marker", {id: "arr-" + t.id, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 6.5, markerHeight: 6.5, orient: "auto-start-reverse"}, defs);
+  svg("path", {d: "M0,1 L10,5 L0,9 z", fill: t.color}, m);
+});
+const gBands = svg("g", {}, tree), gEdges = svg("g", {}, tree), gLabels = svg("g", {}, tree), gNodes = svg("g", {}, tree), gFocus = svg("g", {}, tree);
+bands.forEach((b, i) => {
+  svg("rect", {x: 0, y: b.y0, width: W, height: b.y1 - b.y0, class: "band" + (i % 2 ? " alt" : ""), "data-bg": "1"}, gBands);
+  const t = svg("text", {x: 14, y: b.y0 + 22, class: "era-label", stroke: i % 2 ? "#f8f6f1" : "#efebe2"}, gLabels);
+  t.textContent = `${b.era.name} · ${b.era.span}`;
+});
+const edgeEls = [], focusEls = [];
+const sortedEdges = EDGES.slice().sort((p, q) => byId.get(p.from).year - byId.get(q.from).year || byId.get(p.to).year - byId.get(q.to).year);
+EDGES.forEach(e => {
+  const t = typeById.get(e.type);
+  const d = edgePath(e);
+  const g = svg("g", {class: "edge", "data-i": e.i}, gEdges);
+  svg("path", {d, class: "line", stroke: t.color, "stroke-width": t.width, "stroke-dasharray": t.dash || "none", "stroke-linecap": e.type === "critique" ? "round" : "butt", "marker-end": `url(#arr-${e.type})`}, g);
+  const hit = svg("path", {d, class: "hit"}, g);
+  hit.addEventListener("pointermove", ev => { if (ev.pointerType === "mouse") showTip(e, ev.clientX, ev.clientY, true); hot(e.i, true); });
+  hit.addEventListener("pointerleave", () => { hideTip(); hot(e.i, false); });
+  hit.addEventListener("click", ev => {
+    ev.stopPropagation();
+    if (lastPointer === "mouse") select(e.to, {scroll: false});
+    else showTip(e, ev.clientX, ev.clientY, false);
+  });
+  edgeEls[e.i] = g;
+});
+NODES.slice().sort((p, q) => p.year - q.year || p.x - q.x).forEach(n => {
+  const g = svg("g", {class: "node " + n.kind, tabindex: 0, role: "button", "data-id": n.id,
+    "aria-label": `${n.name}, ${n.year}, ${KIND[n.kind].toLowerCase()}, ${n.topic}. ${n.summary}`,
+    transform: `translate(${n.x - n.w / 2},${n.y - H / 2})`}, gNodes);
+  const rx = n.kind === "person" ? H / 2 : 7;
+  svg("rect", {class: "ring", x: -4, y: -4, width: n.w + 8, height: H + 8, rx: rx + 4}, g);
+  const clipId = "clip-" + n.id;
+  const cp = svg("clipPath", {id: clipId}, defs);
+  svg("rect", {width: n.w, height: H, rx}, cp);
+  svg("rect", {class: "box", width: n.w, height: H, rx}, g);
+  svg("rect", {width: n.kind === "person" ? 14 : 6, height: H, fill: topicColor.get(n.topic), "clip-path": `url(#${clipId})`}, g);
+  const cx = n.w / 2 + (n.kind === "person" ? 4 : 2);
+  const t = svg("text", {x: cx, y: 19, "text-anchor": "middle", class: "t"}, g); t.textContent = n.name;
+  const s = svg("text", {x: cx, y: 35, "text-anchor": "middle", class: "s"}, g); s.textContent = n.sub;
+  g.addEventListener("click", ev => { ev.stopPropagation(); if (dragMoved) return; select(n.id, {scroll: "ifNeeded"}); });
+  g.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); select(n.id, {scroll: "ifNeeded", focusPanel: narrow.matches}); } });
+  n.el = g;
+});
+sortedEdges.forEach(e => {
+  const a = byId.get(e.from), b = byId.get(e.to), t = typeById.get(e.type);
+  const f = svg("path", {d: edgePath(e), class: "efocus", tabindex: 0, role: "button",
+    "aria-label": `Connection: ${a.name} to ${b.name}. ${t.label}: ${e.note} Press Enter to open ${b.name}.`}, gFocus);
+  f.addEventListener("focus", () => { hot(e.i, true); const r = f.getBoundingClientRect(); showTip(e, r.left + r.width / 2, r.top + r.height / 2, false); });
+  f.addEventListener("blur", () => { hot(e.i, false); hideTip(); });
+  f.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); select(e.to, {scroll: true}); byId.get(e.to).el.focus({preventScroll: true}); } });
+  focusEls[e.i] = f;
+});
+
+/* ---------- controls ---------- */
+const state = {selected: null, mode: "both", topic: "All", year: MAX_YEAR, query: "", types: new Set(TYPES.map(t => t.id)), tour: -1};
+const yearIn = $("year");
+yearIn.min = MIN_YEAR; yearIn.max = MAX_YEAR; yearIn.value = MAX_YEAR;
+const chipsEl = $("chips");
+["All", ...TOPICS.map(t => t.id)].forEach(name => {
+  const b = h("button", {type: "button", class: "chip", "aria-pressed": String(name === "All"), "data-topic": name});
+  if (name !== "All") b.append(dot(topicColor.get(name)));
+  b.append(name === "All" ? "All topics" : name);
+  b.addEventListener("click", () => { state.topic = name; syncChips(); render(); });
+  chipsEl.append(b);
+});
+function syncChips(){ for (const c of chipsEl.children) c.setAttribute("aria-pressed", String(c.dataset.topic === state.topic)); }
+const typesEl = $("types");
+TYPES.forEach(t => {
+  const cb = h("input", {type: "checkbox", checked: "", "data-type": t.id});
+  cb.addEventListener("change", () => { cb.checked ? state.types.add(t.id) : state.types.delete(t.id); render(); });
+  typesEl.append(h("label", null, cb, swatch(t.id), t.label));
+});
+document.querySelectorAll("#seg button").forEach(b => b.addEventListener("click", () => {
+  state.mode = b.dataset.mode; syncSeg(); render();
+}));
+function syncSeg(){ document.querySelectorAll("#seg button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.mode === state.mode))); }
+yearIn.addEventListener("input", () => { state.year = Number(yearIn.value); render(); });
+$("resetBtn").addEventListener("click", () => { resetFilters(); state.tour = -1; select(null); });
+function resetFilters(){
+  state.topic = "All"; state.year = MAX_YEAR; yearIn.value = MAX_YEAR; state.query = ""; q.value = ""; closeResults();
+  state.mode = "both"; state.types = new Set(TYPES.map(t => t.id));
+  typesEl.querySelectorAll("input").forEach(i => i.checked = true);
+  syncChips(); syncSeg();
+}
+$("tourBtn").addEventListener("click", () => startTour());
+
+/* kinds legend */
+const kinds = $("kinds");
+[["person", "Person"], ["work", "Work (paper, system, dataset)"], ["idea", "Idea"]].forEach(([k, label]) => {
+  const s = svg("svg", {width: 30, height: 16, "aria-hidden": "true"});
+  svg("rect", {x: 1, y: 1, width: 28, height: 14, rx: k === "person" ? 7 : 3, fill: "#fff", stroke: "#8f887a", "stroke-width": 1.2, "stroke-dasharray": k === "idea" ? "4 2" : "none"}, s);
+  kinds.append(h("span", null, s, label));
+});
+kinds.append(h("span", {text: "· The colored edge of each box is its topic. Arrows point from influence to influenced."}));
+
+/* list view */
+const list = $("list");
+ERAS.forEach(era => {
+  const ul = h("ul");
+  NODES.filter(n => n.era === era.id).sort((p, q) => p.year - q.year).forEach(n => {
+    ul.append(h("li", null, h("button", {type: "button", text: `${n.name} (${n.year})`, onclick: () => { select(n.id, {scroll: true, focusPanel: true}); }})));
+  });
+  list.append(h("h3", {text: `${era.name} · ${era.span}`}), ul);
+});
+$("stats").textContent = `${NODES.length} people, works and ideas, ${EDGES.length} connections. Each name has its own link: add #hinton, #lecun, #transformer and so on to the address.`;
+
+/* ---------- search ---------- */
+const q = $("q"), results = $("results");
+let active = -1, matches = [];
+function haystack(n){ return [n.name, n.sub, n.who, n.summary, n.description].join(" ").toLowerCase(); }
+NODES.forEach(n => n.hay = haystack(n));
+function rank(n, query){
+  const name = n.name.toLowerCase();
+  if (name.startsWith(query)) return 0;
+  if (name.includes(query)) return 1;
+  if (n.who.toLowerCase().includes(query)) return 2;
+  if (n.summary.toLowerCase().includes(query)) return 3;
+  return 4;
+}
+function runSearch(){
+  const query = q.value.trim().toLowerCase();
+  state.query = query;
+  matches = query ? NODES.filter(n => n.hay.includes(query)).sort((a, b) => rank(a, query) - rank(b, query) || a.year - b.year) : [];
+  active = matches.length ? 0 : -1;
+  drawResults();
+  render();
+}
+function drawResults(){
+  results.replaceChildren();
+  if (!state.query){ closeResults(); return; }
+  if (!matches.length) results.append(h("li", {class: "none", role: "option", "aria-disabled": "true", text: "No match. Try another word, or press Reset."}));
+  matches.slice(0, 10).forEach((n, i) => {
+    const li = h("li", {role: "option", id: "opt-" + n.id, "aria-selected": String(i === active)},
+      h("span", {class: "rn", text: n.name}), h("span", {class: "rs", text: n.sub}));
+    li.addEventListener("mousedown", ev => ev.preventDefault());
+    li.addEventListener("click", () => choose(n.id));
+    results.append(li);
+  });
+  results.hidden = false; q.setAttribute("aria-expanded", "true");
+  if (active >= 0) q.setAttribute("aria-activedescendant", "opt-" + matches[active].id); else q.removeAttribute("aria-activedescendant");
+}
+function closeResults(){ results.hidden = true; q.setAttribute("aria-expanded", "false"); q.removeAttribute("aria-activedescendant"); }
+function choose(id){
+  q.value = ""; state.query = ""; matches = []; closeResults();
+  state.tour = -1;
+  select(id, {scroll: true});
+}
+q.addEventListener("input", runSearch);
+q.addEventListener("focus", () => { if (state.query) drawResults(); });
+q.addEventListener("blur", () => setTimeout(closeResults, 120));
+q.addEventListener("keydown", ev => {
+  const shown = Math.min(matches.length, 10);
+  if (ev.key === "ArrowDown" && shown){ ev.preventDefault(); active = (active + 1) % shown; drawResults(); }
+  else if (ev.key === "ArrowUp" && shown){ ev.preventDefault(); active = (active - 1 + shown) % shown; drawResults(); }
+  else if (ev.key === "Enter"){ ev.preventDefault(); if (matches.length) choose(matches[Math.max(0, active)].id); }
+  else if (ev.key === "Escape"){ if (!results.hidden){ ev.preventDefault(); ev.stopPropagation(); closeResults(); } else if (q.value){ ev.preventDefault(); ev.stopPropagation(); q.value = ""; runSearch(); } }
+});
+
+/* ---------- lineage ---------- */
+function walk(start, dir){
+  const nodes = new Set([start]), edges = new Set(), stack = [start];
+  while (stack.length){
+    const cur = stack.pop();
+    for (const e of EDGES){
+      if (!state.types.has(e.type)) continue;
+      const [from, to] = dir === "up" ? [e.to, e.from] : [e.from, e.to];
+      if (from === cur){ edges.add(e.i); if (!nodes.has(to)){ nodes.add(to); stack.push(to); } }
+    }
+  }
+  return {nodes, edges};
+}
+function lineage(){
+  if (!state.selected) return null;
+  const nodes = new Set(), edges = new Set();
+  (state.mode === "both" ? ["up", "down"] : [state.mode]).forEach(d => { const r = walk(state.selected, d); r.nodes.forEach(x => nodes.add(x)); r.edges.forEach(x => edges.add(x)); });
+  return {nodes, edges};
+}
+
+/* ---------- render ---------- */
+function passes(n){
+  return (state.topic === "All" || n.topic === state.topic) && n.year <= state.year && (!state.query || n.hay.includes(state.query));
+}
+function render(){
+  const lin = lineage();
+  let shown = 0;
+  const vis = new Map();
+  for (const n of NODES){
+    const ok = passes(n), inLin = !lin || lin.nodes.has(n.id), isSel = n.id === state.selected;
+    const visible = isSel || (ok && inLin);
+    vis.set(n.id, visible);
+    if (ok) shown++;
+    n.el.classList.toggle("sel", isSel);
+    n.el.setAttribute("aria-pressed", String(isSel));
+    n.el.classList.toggle("hl", !!lin && inLin && !isSel && ok);
+    n.el.classList.toggle("match", !!state.query && n.hay.includes(state.query) && ok);
+    n.el.classList.toggle("dim", !visible);
+  }
+  let edgesShown = 0;
+  for (const e of EDGES){
+    const g = edgeEls[e.i], off = !state.types.has(e.type);
+    const yearOk = byId.get(e.from).year <= state.year && byId.get(e.to).year <= state.year;
+    const inLin = !lin || lin.edges.has(e.i);
+    const visible = !off && yearOk && inLin && vis.get(e.from) && vis.get(e.to);
+    g.classList.toggle("off", off);
+    focusEls[e.i].classList.toggle("off", off);
+    g.classList.toggle("hl", !!lin && inLin && visible);
+    g.classList.toggle("dim", !visible);
+    if (visible) edgesShown++;
+  }
+  const active = (state.topic !== "All") + (state.mode !== "both") + (state.types.size < TYPES.length);
+  $("filtersSum").textContent = "Topics, lineage and connection types" + (active ? ` · ${active} changed` : "");
+  $("yearOut").textContent = state.year === MAX_YEAR ? `${MAX_YEAR} (all)` : String(state.year);
+  const bits = [];
+  if (state.query) bits.push(`${matches.length} ${matches.length === 1 ? "name matches" : "names match"} "${q.value.trim()}"`);
+  else bits.push(`${shown} of ${NODES.length} names shown`);
+  if (state.topic !== "All") bits.push(`topic: ${state.topic}`);
+  if (state.year !== MAX_YEAR) bits.push(`through ${state.year}`);
+  if (state.selected) bits.push(`${byId.get(state.selected).name} selected (${modeLabel()})`);
+  bits.push(`${edgesShown} connections lit`);
+  $("status").textContent = bits.join(" · ") + ". Dimmed names stay clickable for context.";
+  renderPanel(lin);
+}
+function modeLabel(){ return state.mode === "up" ? "ancestors" : state.mode === "down" ? "descendants" : "full lineage"; }
+
+/* ---------- panel ---------- */
+const panel = $("panel");
+function linkList(items){
+  if (!items.length) return h("p", {class: "empty", text: "None shown in this tree (or hidden by the connection toggles)."});
+  const ul = h("ul", {class: "links"});
+  items.forEach(({other, e}) => {
+    const t = typeById.get(e.type);
+    ul.append(h("li", null, h("button", {type: "button", onclick: () => { select(other.id, {scroll: true}); if (narrow.matches) panel.focus({preventScroll: true}); else other.el.focus({preventScroll: true}); }},
+      h("strong", null, swatch(e.type, 20), other.name),
+      h("span", {class: "note", text: `${t.label}: ${e.note}`}))));
+  });
+  return ul;
+}
+function tourBox(){
+  const i = state.tour, stop = TOUR[i];
+  const last = i === TOUR.length - 1;
+  return h("div", {class: "tourbox", role: "group", "aria-label": "Guided tour"},
+    h("div", {class: "tk", text: `Guided tour · stop ${i + 1} of ${TOUR.length}`}),
+    h("p", {text: stop.text}),
+    h("div", {class: "tournav"},
+      h("button", {type: "button", class: "btn", id: "tBack", disabled: i === 0 ? "" : false, onclick: () => tourStep(-1)}, "← Back"),
+      h("button", {type: "button", class: "btn primary", id: "tNext", onclick: () => last ? endTour() : tourStep(1)}, last ? "Finish ✓" : "Next →"),
+      h("button", {type: "button", class: "btn", id: "tExit", onclick: () => endTour()}, "Exit tour"),
+      h("span", {class: "hint", text: "Arrow keys work too."})));
+}
+function renderPanel(lin){
+  const keepFocus = document.activeElement && panel.contains(document.activeElement) ? document.activeElement.id : null;
+  panel.replaceChildren();
+  panel.append(h("div", {class: "grab", "aria-hidden": "true"}));
+  if (!state.selected){
+    panel.append(
+      h("div", {class: "kicker", text: "How to read this"}),
+      h("h2", {text: "Pick a name"}),
+      h("p", {text: "Each box is a person, a work (a paper, system or dataset) or an idea: pills are people, square corners are works, dashed borders are ideas. The colored edge gives the topic. Arrows point from influence to influenced, and the line style gives the kind of link."}),
+      h("p", {text: "Click a name to light up everyone upstream and downstream of it, or switch to Ancestors or Descendants to trace one direction. Hover or focus a line to read the connection."}),
+      h("p", {class: "intro-cta"}, h("button", {type: "button", class: "btn primary", onclick: () => startTour()}, "▶ Start the guided tour")),
+      h("h3", {text: "A braided history"}),
+      h("p", {text: "AI did not grow along one straight line. Symbolic reasoning, neural networks, control, statistics and reinforcement learning overlapped and influenced each other. Boxes mark selected milestones, not exhaustive credit; deep learning and GPT were built by many teams."}),
+      h("p", {class: "empty", text: "Tip: try Geoffrey Hinton, then switch to Descendants."}));
+    panel.classList.remove("open"); document.body.classList.remove("sheet-open");
+    panel.setAttribute("aria-label", "Details");
+    return;
+  }
+  const n = byId.get(state.selected), era = eraById.get(n.era);
+  panel.setAttribute("aria-label", `Details: ${n.name}`);
+  panel.append(h("button", {type: "button", class: "close", id: "pClose", "aria-label": "Close details and clear the selection", onclick: () => { state.tour = -1; select(null); }}, "×"));
+  if (state.tour >= 0) panel.append(tourBox());
+  const kick = h("div", {class: "kicker", text: `${era.name} · ${n.year}`});
+  panel.append(kick, h("h2", {text: n.name, id: "pTitle"}));
+  panel.append(h("div", {class: "meta"},
+    h("span", {class: "tag"}, dot(topicColor.get(n.topic)), n.topic),
+    h("span", {class: "tag", text: KIND[n.kind]}),
+    n.who !== n.name ? h("span", {text: n.who}) : null));
+  panel.append(h("p", {class: "lead", text: n.summary}), h("p", {text: n.description}));
+  if (n.loop) panel.append(h("ul", {class: "loop", "aria-label": "The interaction loop"}, ...n.loop.map((s, i) => h("li", {text: (i ? "→ " : "") + s + (i === n.loop.length - 1 ? " ↺" : "")}))));
+  if (n.quote){
+    const qd = n.quote;
+    panel.append(h("figure", {class: "quote"},
+      h("div", {class: "qk", text: "A real quote"}),
+      h("blockquote", {cite: qd.url}, `“${qd.text}”`),
+      h("figcaption", null,
+        `${qd.speaker} on ${qd.show}, “${qd.title}” (${qd.date}), at ${qd.time}. `,
+        h("a", {href: qd.url, target: "_blank", rel: "noopener noreferrer"}, `${qd.label} ↗`, h("span", {class: "sr", text: " (opens in a new tab)"})),
+        h("small", {text: qd.note}))));
+  }
+  if (n.sources.length){
+    panel.append(h("h3", {text: "Sources"}));
+    panel.append(h("ul", {class: "sources"}, ...n.sources.map(s => h("li", null,
+      h("a", {href: s.url, target: "_blank", rel: "noopener noreferrer"}, `${s.label} ↗`, h("span", {class: "sr", text: " (opens in a new tab)"}))))));
+  } else {
+    panel.append(h("h3", {text: "Sources"}), h("p", {class: "empty", text: "No primary source link yet: this is a book, and no verified open page was found for it."}));
+  }
+  const count = lin ? lin.nodes.size - 1 : 0;
+  const word = state.mode === "up" ? "ancestors" : state.mode === "down" ? "descendants" : "connected names in its lineage";
+  panel.append(h("p", {class: "meta", text: `${count} ${word} (${modeLabel()} view, using the connection types switched on).`}));
+  const ins = EDGES.filter(e => e.to === n.id && state.types.has(e.type)).map(e => ({other: byId.get(e.from), e}));
+  const outs = EDGES.filter(e => e.from === n.id && state.types.has(e.type)).map(e => ({other: byId.get(e.to), e}));
+  panel.append(h("h3", {text: "Influenced by"}), linkList(ins), h("h3", {text: "Influenced"}), linkList(outs));
+  panel.classList.add("open"); document.body.classList.toggle("sheet-open", narrow.matches);
+  if (keepFocus && $(keepFocus)) $(keepFocus).focus({preventScroll: true});
+}
+
+/* ---------- selection, hash, scrolling ---------- */
+function resolve(id){ id = (id || "").toLowerCase(); return byId.has(id) ? id : (ALIASES[id] && byId.has(ALIASES[id]) ? ALIASES[id] : null); }
+function select(id, opts){
+  opts = opts || {};
+  state.selected = id && byId.has(id) ? id : null;
+  if (!state.selected || (state.tour >= 0 && TOUR[state.tour].id !== state.selected)) state.tour = -1;
+  const want = state.selected ? "#" + state.selected : "";
+  if (location.hash !== want) history.replaceState(null, "", want || location.pathname + location.search);
+  render();
+  if (state.selected){
+    panel.scrollTop = 0;
+    if (opts.scroll) scrollToNode(byId.get(state.selected), opts.scroll === "ifNeeded");
+    if (opts.focusPanel) panel.focus({preventScroll: true});
+  }
+}
+const canvas = $("canvas");
+let zoom = 1, fitMode = true;
+function applyZoom(z, keepCenter){
+  const cx = canvas.scrollLeft + canvas.clientWidth / 2, cy = canvas.scrollTop + canvas.clientHeight / 2;
+  const old = zoom;
+  zoom = Math.max(0.35, Math.min(1.8, z));
+  tree.style.width = (W * zoom) + "px"; tree.style.height = (HEIGHT * zoom) + "px";
+  if (keepCenter){ canvas.scrollLeft = cx * zoom / old - canvas.clientWidth / 2; canvas.scrollTop = cy * zoom / old - canvas.clientHeight / 2; }
+}
+function fitZoom(){ return (canvas.clientWidth - 2) / W; }
+function initialZoom(){ const f = fitZoom(); return f >= 0.7 ? Math.min(f, 1.15) : 0.8; }
+$("zIn").addEventListener("click", () => { fitMode = false; applyZoom(zoom * 1.2, true); });
+$("zOut").addEventListener("click", () => { fitMode = false; applyZoom(zoom / 1.2, true); });
+$("zFit").addEventListener("click", () => { fitMode = true; applyZoom(Math.min(fitZoom(), 1.15), false); });
+new ResizeObserver(() => { if (fitMode) applyZoom(initialZoom(), false); }).observe(canvas);
+function scrollToNode(n, ifNeeded){
+  const behavior = reduced.matches ? "auto" : "smooth";
+  const cr = canvas.getBoundingClientRect();
+  const viewBottom = innerHeight - (narrow.matches && panel.classList.contains("open") ? panel.offsetHeight : 0);
+  const nodeY = cr.top + n.y * zoom - canvas.scrollTop, nodeX = cr.left + n.x * zoom - canvas.scrollLeft;
+  const visTop0 = Math.max(cr.top, 0), visBot0 = Math.min(cr.bottom, viewBottom);
+  if (ifNeeded && nodeY > visTop0 + 30 && nodeY < visBot0 - 30 && nodeX > cr.left + 20 && nodeX < cr.right - 20) return;
+  let shift = 0;
+  if (visBot0 - visTop0 < Math.min(240, canvas.clientHeight * 0.6)){
+    /* bring the map itself into view first: on a phone just above the sheet, on a desktop with the panel beside it */
+    shift = narrow.matches ? cr.top - 8 : document.querySelector(".layout").getBoundingClientRect().top;
+    window.scrollTo({top: Math.max(0, window.scrollY + shift), behavior});
+  }
+  const top2 = cr.top - shift, vt = Math.max(top2, 0), vb = Math.min(cr.bottom - shift, viewBottom);
+  const centerY = Math.max(40, (vt + vb) / 2 - top2);
+  canvas.scrollTo({left: n.x * zoom - canvas.clientWidth / 2, top: n.y * zoom - centerY, behavior});
+}
+window.addEventListener("hashchange", () => { const id = resolve(location.hash.slice(1)); if (id && id !== state.selected){ state.tour = -1; select(id, {scroll: true}); } });
+
+/* clicking empty space clears; mouse drag pans */
+let dragMoved = false, drag = null, lastPointer = "mouse";
+document.addEventListener("pointerdown", ev => { lastPointer = ev.pointerType || "mouse"; }, true);
+canvas.addEventListener("pointerdown", ev => {
+  dragMoved = false;
+  if (ev.pointerType !== "mouse" || ev.button !== 0) return;
+  drag = {x: ev.clientX, y: ev.clientY, l: canvas.scrollLeft, t: canvas.scrollTop};
+});
+window.addEventListener("pointermove", ev => {
+  if (!drag) return;
+  const dx = ev.clientX - drag.x, dy = ev.clientY - drag.y;
+  if (!dragMoved && Math.hypot(dx, dy) > 5){ dragMoved = true; canvas.classList.add("dragging"); hideTip(); }
+  if (dragMoved){ canvas.scrollLeft = drag.l - dx; canvas.scrollTop = drag.t - dy; }
+});
+window.addEventListener("pointerup", () => { drag = null; canvas.classList.remove("dragging"); setTimeout(() => { dragMoved = false; }, 0); });
+tree.addEventListener("click", ev => {
+  if (dragMoved) return;
+  if (ev.target.closest(".node") || ev.target.closest(".edge")) return;
+  hideTip();
+  if (state.selected){ state.tour = -1; select(null); }
+});
+
+/* ---------- tooltip ---------- */
+const tip = $("tip");
+function hot(i, on){ edgeEls[i].classList.toggle("hot", on); }
+function showTip(e, x, y, mouse){
+  const a = byId.get(e.from), b = byId.get(e.to), t = typeById.get(e.type);
+  tip.replaceChildren(h("strong", {text: `${a.name} → ${b.name}`}), h("div", {class: "tt"}, swatch(e.type, 20), t.label), h("div", {text: e.note}),
+    mouse ? h("div", {class: "th", text: `Click to open ${b.name}.`}) : null);
+  tip.hidden = false;
+  const pad = 14, r = tip.getBoundingClientRect();
+  let left = x + pad, topY = y + pad;
+  if (left + r.width > innerWidth - 8) left = Math.max(8, x - r.width - pad);
+  if (topY + r.height > innerHeight - 8) topY = Math.max(8, y - r.height - pad);
+  tip.style.left = left + "px"; tip.style.top = topY + "px";
+}
+function hideTip(){ tip.hidden = true; }
+canvas.addEventListener("scroll", () => { if (!document.activeElement || !document.activeElement.classList || !document.activeElement.classList.contains("efocus")) hideTip(); }, {passive: true});
+
+/* ---------- tour ---------- */
+function startTour(){
+  resetFilters();
+  state.tour = 0;
+  select(TOUR[0].id, {scroll: true});
+  focusTour();
+}
+function tourStep(d){
+  if (state.tour < 0) return;
+  const next = state.tour + d;
+  if (next < 0 || next >= TOUR.length) return;
+  state.tour = next;
+  select(TOUR[next].id, {scroll: true});
+}
+function endTour(){ state.tour = -1; render(); }
+function focusTour(){ const b = $("tNext"); if (b) b.focus({preventScroll: true}); }
+
+/* ---------- keyboard ---------- */
+document.addEventListener("keydown", ev => {
+  const tag = (ev.target.tagName || "").toLowerCase();
+  const typing = tag === "input" || tag === "textarea" || tag === "select" || ev.target.isContentEditable;
+  if (ev.key === "Escape"){
+    if (!tip.hidden){ hideTip(); }
+    if (state.tour >= 0){ endTour(); ev.preventDefault(); return; }
+    if (state.selected){ const back = byId.get(state.selected).el; select(null); if (narrow.matches || panel.contains(document.activeElement)) back.focus({preventScroll: true}); ev.preventDefault(); }
+    return;
+  }
+  if (state.tour >= 0 && !typing && !ev.altKey && !ev.ctrlKey && !ev.metaKey){
+    if (ev.key === "ArrowRight"){ ev.preventDefault(); state.tour === TOUR.length - 1 ? endTour() : tourStep(1); }
+    else if (ev.key === "ArrowLeft"){ ev.preventDefault(); tourStep(-1); }
+  }
+});
+narrow.addEventListener("change", () => { if (!narrow.matches) $("filters").open = true; render(); });
+if (narrow.matches) $("filters").open = false;
+
+/* ---------- start ---------- */
+applyZoom(initialZoom(), false);
+let startId = null;
+try { startId = resolve(decodeURIComponent(location.hash.slice(1))); } catch (err) { startId = null; }
+if (startId){ select(startId, {scroll: false}); requestAnimationFrame(() => scrollToNode(byId.get(startId))); }
+else render();
+})();
+</script>
+</body>
+</html>
