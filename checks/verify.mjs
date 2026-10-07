@@ -162,5 +162,5 @@ for (const [w, hgt] of [[1280, 900], [390, 844]]){
   check("no external scripts, styles, fonts or images", !/<script[^>]+src=|<link[^>]+stylesheet|@import|url\(http|<img/i.test(html));
 }
 await b.close();
-fs.writeFileSync("verify-results.json", JSON.stringify(results, null, 1));
+fs.writeFileSync(new URL("../tmp/verify-results.json", import.meta.url), JSON.stringify(results, null, 1));
 console.log(`\n${results.filter(r => r.ok).length}/${results.length} checks passed`);
