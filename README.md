@@ -48,11 +48,11 @@ Accessibility: every name is a focusable button (Tab moves through names in date
 
 All data lives in one JSON block, `<script type="application/json" id="data">`, inside `index.html`:
 
-- `nodes`: `id`, `name`, `kind` (person, work or idea), `year`, `era`, `topic` (one of the Atlas's five), `sub` (the box's second line), `who`, `summary` (one line), `description`, `sources` (a list of `{label, url}`), `pos` (`row` within the era band and `x`), and optionally `quote` and `loop`.
+- `nodes`: `id`, `name`, `kind` (person, work or idea), `year`, `era`, `topic` (one of the Atlas's five), `sub` (the box's second line), `who`, `summary` (one line), `description`, `sources` (a list of `{label, url}`), `pos` (`row` within the era band and `x`), and optionally `quote` and `loop`. Each person also carries `faces`, one entry per person the box names: `name`, and for a photo `img`, `file` (the Commons file page), `author`, `license`, `licenseUrl` and `change` (see Photo credits).
 - `edges`: `from`, `to`, `type` (one of the five kinds) and `note`.
 - `eras`, `topics`, `types`, `tour`, `aliases`.
 
-Box positions were found by a small layout search (minimize lines passing behind boxes, line crossings and horizontal distance, keep earlier years above later ones within a band). At load the page also bends any line that would pass behind an unrelated box around it through the free gap beside that box, and spreads the ends of several lines on one box so their arrowheads do not pile up.
+Box positions were found by a small layout search (minimize lines passing behind boxes, line crossings and horizontal distance, keep earlier years above later ones within a band). At load the page also bends any line that would pass behind an unrelated box around it through the free gap beside that box, and spreads the ends of several lines on one box so their arrowheads do not pile up. Box widths come from the reader's own fonts and from the faces at the start of a person's pill, so at load the page also pushes apart neighbours in a row that would come closer than 16 px, keeping their order; rows with room to spare stay where they were placed.
 
 ## Fact check
 
@@ -116,6 +116,41 @@ The wording comes from the video's auto-generated English captions, where the li
 
 A second real quote sits on Backpropagation: Hinton on StarTalk at 1:16:32, correcting a host who credited AI to his own work, "In particular, the back propagation algorithm was reinvented by David Rumelhart" (https://www.youtube.com/watch?v=l6ZcFa8pybE&t=4590s). Both quotes' wording comes from the video's original English captions; the speaker is as labeled in The Singju Post's transcript (https://singjupost.com/is-ai-hiding-its-full-power-w-geoffrey-hinton-transcript/), which agrees with the captions' turn order. The quote card's heading is "A real quote", since the speaker is not always the person the entry is about.
 
+## Photo credits
+
+Photos are real and used only where the license is clearly free. Every photo comes from a Wikimedia Commons file page, and its license, author and description were read from the Commons API and the file's own license section on 7 October 2026. Allowed: public domain, CC0, CC BY and CC BY-SA; a file with any other license, a license claim the file page does not back up (an anonymous photographer with a Creative Commons license and no permission record, for example), or an open deletion request was not used. Each photo was cropped to a square around the face and resized to 200 px or less (JPEG, 3 to 17 KB each, 171 KB in all, in `images/faces/`); CC BY and CC BY-SA require noting changes, so every credit ends "cropped and resized". Each person's panel shows the same credit: photographer or author as Commons states it, the license linked to its text, and the Commons file page.
+
+**The photos keep their own licenses and are not covered by this page's MIT license.** Their use here does not imply that anyone pictured endorses the page.
+
+| Person | Photo | Author (as Commons states it) | License | Wikimedia Commons file |
+|---|---|---|---|---|
+| Alan Turing | [`images/faces/turing.jpg`](images/faces/turing.jpg) | Elliott & Fry | [Public domain](https://commons.wikimedia.org/wiki/File:Alan_Turing_(1951)_(crop).jpg#Licensing) | [Alan Turing (1951) (crop).jpg](https://commons.wikimedia.org/wiki/File:Alan_Turing_(1951)_(crop).jpg) |
+| Claude Shannon | [`images/faces/shannon.jpg`](images/faces/shannon.jpg) | Konrad Jacobs, copyright MFO | [CC BY-SA 2.0 de](https://creativecommons.org/licenses/by-sa/2.0/de/deed.en) | [ClaudeShannon MFO3807.jpg](https://commons.wikimedia.org/wiki/File:ClaudeShannon_MFO3807.jpg) |
+| Marvin Minsky | [`images/faces/minsky.jpg`](images/faces/minsky.jpg) | Sethwoodworth at English Wikipedia (original uploader) | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) | [Marvin Minsky at OLPCb (3x4 cropped).jpg](https://commons.wikimedia.org/wiki/File:Marvin_Minsky_at_OLPCb_(3x4_cropped).jpg) |
+| John McCarthy | [`images/faces/mccarthy.jpg`](images/faces/mccarthy.jpg) | null0 on Flickr | [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/) | [John McCarthy Stanford.jpg](https://commons.wikimedia.org/wiki/File:John_McCarthy_Stanford.jpg) |
+| David Hubel | [`images/faces/hubel-hubel.jpg`](images/faces/hubel-hubel.jpg) | Joey cantod | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [DHUBEL.jpg](https://commons.wikimedia.org/wiki/File:DHUBEL.jpg) |
+| Torsten Wiesel | [`images/faces/hubel-wiesel.jpg`](images/faces/hubel-wiesel.jpg) | Festival della Scienza | [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/) | [Torsten Wiesel-7Nov2006.jpg](https://commons.wikimedia.org/wiki/File:Torsten_Wiesel-7Nov2006.jpg) |
+| Bernard Widrow | [`images/faces/widrow-widrow.jpg`](images/faces/widrow-widrow.jpg) | Stanford Today magazine, (c) 1963 by the Board of Trustees of Leland Stanford Junior University | [Public domain](https://commons.wikimedia.org/wiki/File:Bernard_Widrow_-_1963.jpg#Licensing) | [Bernard Widrow - 1963.jpg](https://commons.wikimedia.org/wiki/File:Bernard_Widrow_-_1963.jpg) |
+| Ted Hoff | [`images/faces/widrow-hoff.jpg`](images/faces/widrow-hoff.jpg) | Dicklyon | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Marcian Ted Hoff (cropped).jpg](https://commons.wikimedia.org/wiki/File:Marcian_Ted_Hoff_(cropped).jpg) |
+| Paul Werbos | [`images/faces/werbos.jpg`](images/faces/werbos.jpg) | Rolf Kickuth | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [PaulWerbos-IJCNNseattle1991-07-08.jpg](https://commons.wikimedia.org/wiki/File:PaulWerbos-IJCNNseattle1991-07-08.jpg) |
+| John Hopfield | [`images/faces/hopfield.jpg`](images/faces/hopfield.jpg) | Arthur Petron | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [John J. Hopfield, 2024 Nobel Prize Laureate in Physics 1 (cropped).jpg](https://commons.wikimedia.org/wiki/File:John_J._Hopfield,_2024_Nobel_Prize_Laureate_in_Physics_1_(cropped).jpg) |
+| Geoffrey Hinton | [`images/faces/hinton.jpg`](images/faces/hinton.jpg) | Arthur Petron | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Geoffrey E. Hinton, 2024 Nobel Prize Laureate in Physics (3x4 cropped).jpg](https://commons.wikimedia.org/wiki/File:Geoffrey_E._Hinton,_2024_Nobel_Prize_Laureate_in_Physics_(3x4_cropped).jpg) |
+| Richard Sutton | [`images/faces/rl-sutton.jpg`](images/faces/rl-sutton.jpg) | Xuthoria | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [SD 2025 - Richard Sutton 01 (cropped).jpg](https://commons.wikimedia.org/wiki/File:SD_2025_-_Richard_Sutton_01_(cropped).jpg) |
+| Yann LeCun | [`images/faces/lecun.jpg`](images/faces/lecun.jpg) | Ecole polytechnique from Paris | [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/) | [Yann LeCun - 2025 (cropped).jpg](https://commons.wikimedia.org/wiki/File:Yann_LeCun_-_2025_(cropped).jpg) |
+| Yoshua Bengio | [`images/faces/bengio.jpg`](images/faces/bengio.jpg) | Maryse Boyce | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | [Yoshua Bengio 2019 cropped.jpg](https://commons.wikimedia.org/wiki/File:Yoshua_Bengio_2019_cropped.jpg) |
+| Ilya Sutskever | [`images/faces/sutskever.jpg`](images/faces/sutskever.jpg) | Eladkarmel | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Ilya Sutskever and Sam Altman in TAU (cropped).jpg](https://commons.wikimedia.org/wiki/File:Ilya_Sutskever_and_Sam_Altman_in_TAU_(cropped).jpg) |
+| Tomas Mikolov | [`images/faces/mikolov.jpg`](images/faces/mikolov.jpg) | Jindřich Nosek (NoJin) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Tomáš Mikolov (2020).jpg](https://commons.wikimedia.org/wiki/File:Tom%C3%A1%C5%A1_Mikolov_(2020).jpg) |
+| Ian Goodfellow | [`images/faces/goodfellow.jpg`](images/faces/goodfellow.jpg) | Ian Goodfellow | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Ian Goodfellow (cropped).jpg](https://commons.wikimedia.org/wiki/File:Ian_Goodfellow_(cropped).jpg) |
+
+Author names are as Commons gives them, with three only reordered or shortened: Commons gives "Jacobs, Konrad" (copyright MFO, the Oberwolfach Research Institute), "The original uploader was Sethwoodworth at English Wikipedia." and "null0" (a Flickr account). For public-domain files Commons gives no license URL, so the license link goes to the license section of the file page, which states the reason (Turing: anonymous UK photograph from 1951 and public domain in the US; Widrow: a 1963 magazine photo whose copyright was not renewed). The Sutskever photo is a small crop of a stage photo (96 px source), so it is softer than the others; it is the portrait the English Wikipedia uses for him.
+
+People shown with initials (a circle in their topic color), and why:
+
+- Warren McCulloch, Donald Hebb, Seppo Linnainmaa, Kunihiko Fukushima, Andrew Barto: no photo of them was found on Wikimedia Commons (searched by name, by Commons category and by the person's Wikidata image).
+- Walter Pitts: his one portrait on Commons (1954, marked public domain because the copyright was not renewed) has an open deletion request (April 2026); the only other photo shows him beside Jerome Lettvin, and its license came from a GFDL migration with a family album as source. Neither was used.
+- Frank Rosenblatt: the one portrait on Commons is marked CC BY-SA 4.0, but it names an anonymous photographer and a museum blog as source, with no permission record, so the license is not clearly valid. A public-domain US Navy photo of the Mark I Perceptron does not say that Rosenblatt is in it.
+- David Silver: the Commons file named "David Silver.jpg" is not identified as the AI researcher, and his Wikidata entry has no image.
+
 ## License
 
 The page and its text are under the MIT license ([LICENSE](LICENSE)). Quotes and linked sources belong to their authors. Photos, where added, keep their own licenses, credited beside each photo.
@@ -124,9 +159,11 @@ Made by Carroll Guertin.
 
 ## Checks
 
-`checks/verify.mjs` drives the page in headless Chromium at 390 and 1280 px wide (42 checks: no
+`checks/verify.mjs` drives the page in headless Chromium at 390 and 1280 px wide (50 checks: no
 errors, no sideways scrolling, search, lineage modes, link toggles, the year slider, the guided tour,
-deep links, the quote cards, and that every link is one of `checks/verified-urls.txt`). Serve the
+deep links, the quote cards, that every person shows a photo that loads or an initials badge and every
+photo its credit, that the only images are the same-origin files in `images/faces/` (under 600 KB),
+and that every link is one of `checks/verified-urls.txt`). Serve the
 folder on port 8793 (`python3 -m http.server 8793 --bind 127.0.0.1`), then `cd checks && node
 verify.mjs`. It needs Playwright (`npm install playwright`, then `npx playwright install chromium`;
 or point `PLAYWRIGHT_MODULE` at an existing copy), and screenshots go to `tmp/`.
