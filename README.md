@@ -1,11 +1,10 @@
 # Family Tree of AI
 
+Live: https://carrollco.github.io/ai-family-tree/
+
 One interactive page, [index.html](index.html), that maps 40 people, works and ideas behind modern AI (from Turing's 1936 computing machines to language models that act) and the 64 documented links between them: who taught whom, who worked together, whose idea built on whose, which discovery came earlier, and which critique got an answer. Every name opens a panel with a description, its primary sources and its "Influenced by" and "Influenced" lists.
 
-It merges two pages that AI chat tools generated for Carroll, kept unchanged in [originals/](originals/):
-
-- [originals/ai-atlas.html](originals/ai-atlas.html), "AI Atlas · An interactive family tree" (dark theme, 22 milestones)
-- [originals/family-tree-of-ai.html](originals/family-tree-of-ai.html), "Family Tree of AI" (light theme, 33 people and works)
+It began as two drafts generated with AI chat tools, "AI Atlas · An interactive family tree" (22 milestones) and "Family Tree of AI" (33 people and works). This page merges the best features of both and corrects their facts against primary sources; the drafts are not published here, because they still contain the errors listed under [Fact check](#fact-check). In the tables below, "Atlas" and "Tree" name the draft a feature or claim came from.
 
 The page is one self-contained file: inline CSS and JavaScript, no CDN, no external fonts, scripts or images. It works offline; only the source links need a network.
 
@@ -15,7 +14,7 @@ The page is one self-contained file: inline CSS and JavaScript, no CDN, no exter
 - serve the folder and open the page over http:
 
   ```sh
-  python3 -m http.server 8793 --bind 127.0.0.1 --directory /home/cagst/projects/ai-family-tree
+  python3 -m http.server 8793 --bind 127.0.0.1    # from this folder
   ```
 
   then go to http://127.0.0.1:8793/index.html and add a name to the address to open it, for example http://127.0.0.1:8793/index.html#hinton
@@ -117,9 +116,9 @@ The wording comes from the video's auto-generated English captions, where the li
 
 A second real quote sits on Backpropagation: Hinton on StarTalk at 1:16:32, correcting a host who credited AI to his own work, "In particular, the back propagation algorithm was reinvented by David Rumelhart" (https://www.youtube.com/watch?v=l6ZcFa8pybE&t=4590s). Both quotes' wording comes from the video's original English captions; the speaker is as labeled in The Singju Post's transcript (https://singjupost.com/is-ai-hiding-its-full-power-w-geoffrey-hinton-transcript/), which agrees with the captions' turn order. The quote card's heading is "A real quote", since the speaker is not always the person the entry is about.
 
-## originals/
+## License
 
-[originals/](originals/) holds the two source pages unchanged.
+The page and its text are under the MIT license ([LICENSE](LICENSE)). Quotes and linked sources belong to their authors. Photos, where added, keep their own licenses, credited beside each photo.
 
 Made by Carroll Guertin.
 
@@ -129,4 +128,5 @@ Made by Carroll Guertin.
 errors, no sideways scrolling, search, lineage modes, link toggles, the year slider, the guided tour,
 deep links, the quote cards, and that every link is one of `checks/verified-urls.txt`). Serve the
 folder on port 8793 (`python3 -m http.server 8793 --bind 127.0.0.1`), then `cd checks && node
-verify.mjs`; it needs Playwright, and screenshots go to `tmp/`.
+verify.mjs`. It needs Playwright (`npm install playwright`, then `npx playwright install chromium`;
+or point `PLAYWRIGHT_MODULE` at an existing copy), and screenshots go to `tmp/`.

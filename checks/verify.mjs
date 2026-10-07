@@ -1,4 +1,5 @@
-import { chromium } from "/home/cagst/projects/whereisit/node_modules/playwright/index.mjs";
+// Playwright from the usual place, or from PLAYWRIGHT_MODULE (a path to its index.mjs).
+const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || "playwright");
 import fs from "fs";
 const BASE = "http://127.0.0.1:8793/index.html";
 const verified = new Set(fs.readFileSync("verified-urls.txt", "utf8").split("\n").filter(Boolean));
@@ -154,7 +155,7 @@ for (const [w, hgt] of [[1280, 900], [390, 844]]){
 }
 // reduced motion and no dark-mode block
 {
-  const html = fs.readFileSync("/home/cagst/projects/ai-family-tree/index.html", "utf8");
+  const html = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
   check("no prefers-color-scheme block in the page", !/prefers-color-scheme/.test(html));
   check("respects prefers-reduced-motion", /prefers-reduced-motion:\s*reduce/.test(html));
   check("no em or en dashes in the page", !/[–—]/.test(html));
