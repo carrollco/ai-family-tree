@@ -167,3 +167,9 @@ and that every link is one of `checks/verified-urls.txt`). Serve the
 folder on port 8793 (`python3 -m http.server 8793 --bind 127.0.0.1`), then `cd checks && node
 verify.mjs`. It needs Playwright (`npm install playwright`, then `npx playwright install chromium`;
 or point `PLAYWRIGHT_MODULE` at an existing copy), and screenshots go to `tmp/`.
+
+`checks/social-card.mjs` renders `images/social-card.png`, the link-preview image the page's Open
+Graph tags name (what LinkedIn and other sites show when the link is shared): the page opened on
+Geoffrey Hinton at 1200 x 627 px, LinkedIn's minimum for its large preview. Serve the folder the same
+way, then `cd checks && node social-card.mjs`. The photos in it keep their own licenses; Hinton's
+credit shows in the card, and every credit is on the page the card links to.
